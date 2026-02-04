@@ -1,19 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Upload, X, Image } from "lucide-react";
 
 // # CONFIGURAÇÕES DO ADMIN
 export function AdminSettings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [settings, setSettings] = useState({
     business_name: "",
+    logo_url: "",
     phone: "",
     whatsapp: "",
     instagram: "",
@@ -43,6 +46,7 @@ export function AdminSettings() {
       if (data) {
         setSettings({
           business_name: data.business_name || "",
+          logo_url: data.logo_url || "",
           phone: data.phone || "",
           whatsapp: data.whatsapp || "",
           instagram: data.instagram || "",
@@ -71,6 +75,7 @@ export function AdminSettings() {
         .from("settings")
         .update({
           business_name: settings.business_name,
+          logo_url: settings.logo_url || null,
           phone: settings.phone,
           whatsapp: settings.whatsapp,
           instagram: settings.instagram,
@@ -102,6 +107,69 @@ export function AdminSettings() {
     } finally {
       setSaving(false);
     }
+  };
+
+  // # UPLOAD DE LOGO
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Arquivo inválido",
+        description: "Por favor, selecione uma imagem.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar tamanho (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "A imagem deve ter no máximo 2MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+      const filePath = `logos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("barbershop")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("barbershop")
+        .getPublicUrl(filePath);
+
+      setSettings({ ...settings, logo_url: publicUrl });
+
+      toast({
+        title: "Logo enviada",
+        description: "Não esqueça de salvar as configurações.",
+      });
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      toast({
+        title: "Erro ao enviar logo",
+        description: "Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const removeLogo = () => {
+    setSettings({ ...settings, logo_url: "" });
   };
 
   if (loading) {
@@ -139,6 +207,60 @@ export function AdminSettings() {
         <h2 className="text-xl font-display font-semibold text-foreground">
           Informações Gerais
         </h2>
+
+        {/* # UPLOAD DE LOGO */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Logo da Barbearia (exibida no Header)
+          </label>
+          <div className="flex items-center gap-4">
+            {settings.logo_url ? (
+              <div className="relative">
+                <img
+                  src={settings.logo_url}
+                  alt="Logo da barbearia"
+                  className="h-16 w-auto rounded-lg border border-border"
+                />
+                <button
+                  onClick={removeLogo}
+                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/80 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="h-16 w-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-secondary/50">
+                <Image className="h-6 w-6 text-muted-foreground" />
+              </div>
+            )}
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingLogo}
+              >
+                {uploadingLogo ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Upload className="h-4 w-4 mr-2" />
+                )}
+                {settings.logo_url ? "Trocar Logo" : "Enviar Logo"}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-1">
+                PNG ou JPG, máximo 2MB
+              </p>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
