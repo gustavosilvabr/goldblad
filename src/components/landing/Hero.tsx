@@ -248,13 +248,13 @@ export function Hero({
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-[90%] max-w-md mx-auto"
+            className="w-[90%] max-w-sm mx-auto"
           >
             <Button
               variant="hero"
               size="xl"
               onClick={scrollToBooking}
-              className="relative overflow-hidden group w-full py-4"
+              className="relative overflow-hidden group w-full py-4 px-6"
             >
               <motion.span
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
@@ -262,8 +262,8 @@ export function Hero({
                 animate={{ x: "200%" }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
               />
-              <Scissors className="mr-2 h-5 w-5" />
-              Agende seu corte em segundos
+              <Scissors className="mr-2 h-5 w-5 flex-shrink-0" />
+              <span className="truncate">Agende seu corte</span>
             </Button>
           </motion.div>
         </motion.div>

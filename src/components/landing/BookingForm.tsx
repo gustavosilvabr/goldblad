@@ -769,11 +769,11 @@ export function BookingForm({
             )}
 
             {/* # NAVEGAÇÃO */}
-            <div className="flex flex-wrap justify-center gap-3 mt-10">
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 mt-10 px-2">
               {step > 1 && (
                 <Button
                   variant="outline"
-                  className="h-12 min-w-[140px] flex-shrink-0"
+                  className="h-12 w-full sm:w-auto sm:min-w-[140px]"
                   onClick={() => setStep(step - 1)}
                   disabled={isSubmitting}
                 >
@@ -784,7 +784,7 @@ export function BookingForm({
               {step < 4 ? (
                 <Button
                   variant="hero"
-                  className="h-12 min-w-[140px] flex-shrink-0 relative overflow-hidden"
+                  className="h-12 w-full sm:w-auto sm:min-w-[140px] relative overflow-hidden"
                   disabled={!canProceed()}
                   onClick={() => setStep(step + 1)}
                 >
@@ -800,19 +800,19 @@ export function BookingForm({
               ) : (
                 <Button
                   variant="whatsapp"
-                  className="h-12 min-w-[180px] flex-shrink-0"
+                  className="h-12 w-full sm:w-auto sm:min-w-[200px] px-4"
                   disabled={!canProceed() || isSubmitting}
                   onClick={handleSubmit}
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      Salvando...
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin flex-shrink-0" />
+                      <span>Salvando...</span>
                     </>
                   ) : (
                     <>
-                      <MessageSquare className="h-5 w-5 mr-2" />
-                      Confirmar no WhatsApp
+                      <MessageSquare className="h-5 w-5 mr-2 flex-shrink-0" />
+                      <span>Confirmar WhatsApp</span>
                     </>
                   )}
                 </Button>
