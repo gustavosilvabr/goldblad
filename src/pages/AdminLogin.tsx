@@ -176,6 +176,16 @@ export default function AdminLogin() {
           </Button>
         </form>
 
+        {/* # VOLTAR AO SITE */}
+        <Button
+          variant="ghost"
+          className="w-full mt-4"
+          onClick={() => navigate("/")}
+        >
+          <Scissors className="h-4 w-4 mr-2" />
+          Voltar ao Site
+        </Button>
+
         {/* # NOTA */}
         <p className="text-center text-xs text-muted-foreground mt-6">
           Primeiro acesso? Entre em contato com o suporte para criar sua conta de administrador.
