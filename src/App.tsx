@@ -4,10 +4,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// # APP PRINCIPAL - Gold Blade Barbearia
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -15,8 +18,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* # ROTAS DO SITE */}
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
+          {/* # ROTAS DO ADMIN */}
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          
+          {/* # 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
