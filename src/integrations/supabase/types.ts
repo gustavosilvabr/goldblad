@@ -486,6 +486,8 @@ export type Database = {
           gps_lng: number | null
           id: string
           instagram: string | null
+          logo_size: string | null
+          logo_size_custom: number | null
           logo_url: string | null
           opening_hour: string | null
           phone: string | null
@@ -507,6 +509,8 @@ export type Database = {
           gps_lng?: number | null
           id?: string
           instagram?: string | null
+          logo_size?: string | null
+          logo_size_custom?: number | null
           logo_url?: string | null
           opening_hour?: string | null
           phone?: string | null
@@ -528,6 +532,8 @@ export type Database = {
           gps_lng?: number | null
           id?: string
           instagram?: string | null
+          logo_size?: string | null
+          logo_size_custom?: number | null
           logo_url?: string | null
           opening_hour?: string | null
           phone?: string | null

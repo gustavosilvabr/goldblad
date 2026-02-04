@@ -9,12 +9,16 @@ interface HeaderProps {
   businessName?: string;
   logoUrl?: string;
   whatsapp?: string;
+  logoSize?: "small" | "medium" | "large" | "custom";
+  logoSizeCustom?: number | null;
 }
 
 export function Header({ 
   businessName = "Gold Blade", 
   logoUrl,
-  whatsapp = "5561992030064"
+  whatsapp = "5561992030064",
+  logoSize = "medium",
+  logoSizeCustom,
 }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -64,7 +68,14 @@ export function Header({
               <motion.img 
                 src={logoUrl} 
                 alt={businessName} 
-                className="h-10 md:h-12 w-auto"
+                style={{
+                  height: logoSize === "custom" && logoSizeCustom 
+                    ? `${Math.min(Math.max(logoSizeCustom, 24), 120)}px`
+                    : logoSize === "small" ? "32px" 
+                    : logoSize === "large" ? "64px" 
+                    : "48px",
+                  width: "auto"
+                }}
                 whileHover={{ scale: 1.05 }}
               />
             ) : (
@@ -202,8 +213,8 @@ export function Header({
                     WhatsApp
                   </Button>
                 </a>
-                <Button 
-                  variant="hero" 
+                <Button
+                  variant="hero"
                   className="flex-1"
                   onClick={() => scrollToSection("agendar")}
                 >
