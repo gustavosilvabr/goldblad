@@ -179,104 +179,68 @@ export function BookingForm({
   };
 
   return (
-    <section id="agendar" className="py-20 md:py-32 relative overflow-hidden">
-      {/* # BACKGROUND */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-[hsl(43,30%,6%)]" />
-      <motion.div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsla(43,74%,49%,0.1)_0%,_transparent_50%)]"
-        animate={{
-          opacity: [0.5, 0.8, 0.5],
-        }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      />
-
-      {/* # DECORAÇÃO */}
-      <motion.div
-        className="absolute top-10 right-10 w-72 h-72 rounded-full border border-primary/5"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-      />
+    <section id="agendar" className="py-16 md:py-24 relative overflow-hidden">
+      {/* # BACKGROUND SÓLIDO */}
+      <div className="absolute inset-0 bg-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary/5" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* # TÍTULO */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8 md:mb-12"
         >
-          <motion.span
-            className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4"
-          >
-            <Calendar className="h-4 w-4" />
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+            <CalendarIcon className="h-4 w-4" />
             Agendamento Rápido
-          </motion.span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gradient-gold mb-4">
+          </span>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-gradient-gold mb-3">
             Agende Seu Horário
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto text-lg">
+          <p className="text-muted-foreground max-w-md mx-auto">
             Em poucos cliques você garante seu horário
           </p>
         </motion.div>
 
-        {/* # INDICADOR DE PASSOS PREMIUM */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex justify-center mb-12"
-        >
-          <div className="flex items-center gap-2 md:gap-4 bg-card/50 backdrop-blur-sm rounded-full px-4 py-3 border border-border">
+        {/* # INDICADOR DE PASSOS */}
+        <div className="flex justify-center mb-8">
+          <div className="flex items-center gap-1 md:gap-2 bg-card rounded-full px-3 py-2 md:px-4 md:py-3 border border-border">
             {stepTitles.map((s, index) => {
               const stepNum = index + 1;
               const Icon = s.icon;
               return (
                 <div key={stepNum} className="flex items-center">
-                  <motion.div
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${
+                  <div
+                    className={`flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-full transition-all ${
                       step >= stepNum
                         ? "bg-primary text-primary-foreground"
                         : "bg-secondary text-muted-foreground"
                     }`}
-                    animate={step === stepNum ? { scale: [1, 1.05, 1] } : {}}
-                    transition={{ duration: 0.5, repeat: step === stepNum ? Infinity : 0 }}
                   >
                     {step > stepNum ? (
-                      <Check className="h-4 w-4" />
+                      <Check className="h-3 w-3 md:h-4 md:w-4" />
                     ) : (
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-3 w-3 md:h-4 md:w-4" />
                     )}
-                    <span className="hidden md:inline text-sm font-medium">{s.title}</span>
-                  </motion.div>
+                    <span className="hidden sm:inline text-xs md:text-sm font-medium">{s.title}</span>
+                  </div>
                   {stepNum < 4 && (
-                    <ChevronRight className={`h-4 w-4 mx-1 ${step > stepNum ? "text-primary" : "text-muted-foreground"}`} />
+                    <ChevronRight className={`h-3 w-3 md:h-4 md:w-4 mx-0.5 md:mx-1 ${step > stepNum ? "text-primary" : "text-muted-foreground"}`} />
                   )}
                 </div>
               );
             })}
           </div>
-        </motion.div>
+        </div>
 
         {/* # FORMULÁRIO */}
         <div className="max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="relative bg-card rounded-3xl border border-border p-6 md:p-10 overflow-hidden"
-            style={{
-              boxShadow: "0 20px 50px -10px hsla(0,0%,0%,0.5)",
-            }}
-          >
-            {/* # GLOW */}
-            <motion.div
-              className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-primary/20 blur-[80px]"
-              animate={{
-                opacity: [0.3, 0.6, 0.3],
-              }}
-              transition={{ duration: 4, repeat: Infinity }}
-            />
+          <div className="bg-card rounded-2xl md:rounded-3xl border border-border p-5 md:p-8 shadow-xl">
+            {/* # DECORAÇÃO SUTIL */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
             {/* # STEP 1: DADOS DO CLIENTE */}
             {step === 1 && (
@@ -680,7 +644,7 @@ export function BookingForm({
                 </motion.div>
               )}
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
