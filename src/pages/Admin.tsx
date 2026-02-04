@@ -96,7 +96,7 @@ export default function Admin() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex overflow-x-hidden">
       <AdminSidebar 
         activeSection={activeSection}
         onSectionChange={(section) => {
@@ -108,7 +108,7 @@ export default function Admin() {
       />
       
       {/* # CONTEÚDO COM PADDING TOP PARA MOBILE (HEADER FIXO) */}
-      <main className="flex-1 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8">
+      <main className="flex-1 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 min-w-0 overflow-x-hidden">
         {renderContent()}
       </main>
     </div>
