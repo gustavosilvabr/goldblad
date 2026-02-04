@@ -84,6 +84,8 @@ const Index = () => {
         businessName={businessName}
         logoUrl={settings?.logo_url}
         whatsapp={whatsapp}
+        logoSize={settings?.logo_size || "medium"}
+        logoSizeCustom={settings?.logo_size_custom}
       />
       
       <main>

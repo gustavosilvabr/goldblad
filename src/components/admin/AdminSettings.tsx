@@ -17,6 +17,8 @@ export function AdminSettings() {
   const [settings, setSettings] = useState({
     business_name: "",
     logo_url: "",
+    logo_size: "medium" as "small" | "medium" | "large" | "custom",
+    logo_size_custom: null as number | null,
     phone: "",
     whatsapp: "",
     instagram: "",
@@ -47,6 +49,8 @@ export function AdminSettings() {
         setSettings({
           business_name: data.business_name || "",
           logo_url: data.logo_url || "",
+          logo_size: (data.logo_size as "small" | "medium" | "large" | "custom") || "medium",
+          logo_size_custom: data.logo_size_custom || null,
           phone: data.phone || "",
           whatsapp: data.whatsapp || "",
           instagram: data.instagram || "",
@@ -76,6 +80,8 @@ export function AdminSettings() {
         .update({
           business_name: settings.business_name,
           logo_url: settings.logo_url || null,
+          logo_size: settings.logo_size,
+          logo_size_custom: settings.logo_size === "custom" ? settings.logo_size_custom : null,
           phone: settings.phone,
           whatsapp: settings.whatsapp,
           instagram: settings.instagram,
@@ -209,8 +215,8 @@ export function AdminSettings() {
         </h2>
 
         {/* # UPLOAD DE LOGO */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-foreground mb-2">
+        <div className="mb-6 space-y-4">
+          <label className="block text-sm font-medium text-foreground">
             Logo da Barbearia (exibida no Header)
           </label>
           <div className="flex flex-wrap items-center gap-4">
@@ -259,6 +265,56 @@ export function AdminSettings() {
                 PNG ou JPG, máximo 2MB
               </p>
             </div>
+          </div>
+
+          {/* Tamanho do Logo */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-foreground">
+              Tamanho do Logo no Header
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "small", label: "Pequeno (32px)" },
+                { value: "medium", label: "Médio (48px)" },
+                { value: "large", label: "Grande (64px)" },
+                { value: "custom", label: "Personalizado" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() =>
+                    setSettings({ ...settings, logo_size: option.value as typeof settings.logo_size })
+                  }
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    settings.logo_size === option.value
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary border-border text-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            
+            {settings.logo_size === "custom" && (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  value={settings.logo_size_custom || ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      logo_size_custom: parseInt(e.target.value) || null,
+                    })
+                  }
+                  placeholder="Ex: 56"
+                  className="bg-secondary border-border w-32"
+                  min={24}
+                  max={120}
+                />
+                <span className="text-sm text-muted-foreground">pixels (24-120)</span>
+              </div>
+            )}
           </div>
         </div>
 

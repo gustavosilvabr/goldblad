@@ -26,6 +26,7 @@ export function AdminDashboard() {
     monthAppointments: 0,
     totalClients: 0,
     monthRevenue: 0,
+    last7DaysClients: 0,
   });
   const [recentAppointments, setRecentAppointments] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
@@ -42,6 +43,10 @@ export function AdminDashboard() {
       const monthEnd = endOfMonth(today);
       const todayStart = startOfDay(today);
       const todayEnd = endOfDay(today);
+
+      // # Data de 7 dias atrás
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
       // # Agendamentos de hoje
       const { count: todayCount } = await supabase
@@ -62,6 +67,18 @@ export function AdminDashboard() {
         .from("clients")
         .select("*", { count: "exact", head: true });
 
+      // # Clientes dos últimos 7 dias (baseado nos agendamentos)
+      const { data: last7DaysAppointments } = await supabase
+        .from("appointments")
+        .select("client_phone")
+        .gte("appointment_date", format(sevenDaysAgo, "yyyy-MM-dd"))
+        .lte("appointment_date", format(today, "yyyy-MM-dd"));
+      
+      // # Contar clientes únicos dos últimos 7 dias
+      const uniqueClientsLast7Days = new Set(
+        last7DaysAppointments?.map(app => app.client_phone) || []
+      ).size;
+
       // # Faturamento do mês
       const monthRevenue = monthAppointments?.reduce(
         (acc, app) => acc + (Number(app.total_price) || 0), 
@@ -75,20 +92,32 @@ export function AdminDashboard() {
         .order("created_at", { ascending: false })
         .limit(5);
 
-      // # Dados para o gráfico (últimos 7 dias)
+      // # Dados para o gráfico (últimos 7 dias) - agora com contagem de clientes
+      const { data: allLast7Days } = await supabase
+        .from("appointments")
+        .select("appointment_date, client_phone, total_price")
+        .gte("appointment_date", format(sevenDaysAgo, "yyyy-MM-dd"))
+        .lte("appointment_date", format(today, "yyyy-MM-dd"));
+
       const chartData = [];
       for (let i = 6; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
         const dateStr = format(date, "yyyy-MM-dd");
 
-        const dayAppointments = monthAppointments?.filter(
+        const dayAppointments = allLast7Days?.filter(
           (app) => app.appointment_date === dateStr
         ) || [];
+
+        // Contar clientes únicos deste dia
+        const uniqueClients = new Set(
+          dayAppointments.map(app => app.client_phone)
+        ).size;
 
         chartData.push({
           date: format(date, "EEE", { locale: ptBR }),
           agendamentos: dayAppointments.length,
+          clientes: uniqueClients,
           faturamento: dayAppointments.reduce(
             (acc, app) => acc + (Number(app.total_price) || 0),
             0
@@ -101,6 +130,7 @@ export function AdminDashboard() {
         monthAppointments: monthCount || 0,
         totalClients: clientsCount || 0,
         monthRevenue,
+        last7DaysClients: uniqueClientsLast7Days,
       });
       setRecentAppointments(recent || []);
       setChartData(chartData);
@@ -166,9 +196,12 @@ export function AdminDashboard() {
               <Users className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Clientes</p>
+              <p className="text-sm text-muted-foreground">Clientes (7 dias)</p>
               <p className="text-2xl font-bold text-foreground">
-                {stats.totalClients}
+                {stats.last7DaysClients}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Total: {stats.totalClients}
               </p>
             </div>
           </div>
@@ -219,6 +252,13 @@ export function AdminDashboard() {
                 dataKey="agendamentos" 
                 fill="hsl(var(--primary))" 
                 radius={[4, 4, 0, 0]}
+                name="Agendamentos"
+              />
+              <Bar 
+                dataKey="clientes" 
+                fill="hsl(var(--chart-2))" 
+                radius={[4, 4, 0, 0]}
+                name="Clientes"
               />
             </BarChart>
           </ResponsiveContainer>
