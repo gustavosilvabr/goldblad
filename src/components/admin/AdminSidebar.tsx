@@ -52,13 +52,21 @@ export function AdminSidebar({
 
   return (
     <>
-      {/* # BOTÃO MOBILE */}
-      <button
-        onClick={onToggle}
-        className="fixed top-4 left-4 z-50 lg:hidden p-2 bg-card border border-border rounded-lg"
-      >
-        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-      </button>
+      {/* # HEADER FIXO COM BOTÃO MOBILE */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-border z-50 lg:hidden flex items-center px-4">
+        <button
+          onClick={onToggle}
+          className="p-2 bg-secondary border border-border rounded-lg"
+        >
+          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
+        <div className="flex items-center gap-2 ml-4">
+          <Scissors className="h-5 w-5 text-primary" />
+          <span className="font-display text-lg text-gradient-gold uppercase tracking-wider">
+            Admin
+          </span>
+        </div>
+      </header>
 
       {/* # OVERLAY MOBILE */}
       {isOpen && (

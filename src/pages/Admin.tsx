@@ -107,7 +107,8 @@ export default function Admin() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
       
-      <main className="flex-1 lg:ml-64 p-4 md:p-8">
+      {/* # CONTEÚDO COM PADDING TOP PARA MOBILE (HEADER FIXO) */}
+      <main className="flex-1 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8">
         {renderContent()}
       </main>
     </div>

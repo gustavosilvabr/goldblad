@@ -769,66 +769,55 @@ export function BookingForm({
             )}
 
             {/* # NAVEGAÇÃO */}
-            <motion.div
-              className="flex gap-3 mt-10"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
+            <div className="flex flex-wrap justify-center gap-3 mt-10">
               {step > 1 && (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
-                  <Button
-                    variant="outline"
-                    className="w-full h-12"
-                    onClick={() => setStep(step - 1)}
-                    disabled={isSubmitting}
-                  >
-                    Voltar
-                  </Button>
-                </motion.div>
+                <Button
+                  variant="outline"
+                  className="h-12 min-w-[140px] flex-shrink-0"
+                  onClick={() => setStep(step - 1)}
+                  disabled={isSubmitting}
+                >
+                  Voltar
+                </Button>
               )}
 
               {step < 4 ? (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
-                  <Button
-                    variant="hero"
-                    className="w-full h-12 relative overflow-hidden"
-                    disabled={!canProceed()}
-                    onClick={() => setStep(step + 1)}
-                  >
-                    <motion.span
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                      initial={{ x: "-100%" }}
-                      animate={{ x: "200%" }}
-                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
-                    />
-                    Continuar
-                    <ChevronRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </motion.div>
+                <Button
+                  variant="hero"
+                  className="h-12 min-w-[140px] flex-shrink-0 relative overflow-hidden"
+                  disabled={!canProceed()}
+                  onClick={() => setStep(step + 1)}
+                >
+                  <motion.span
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "200%" }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
+                  />
+                  Continuar
+                  <ChevronRight className="ml-2 h-5 w-5" />
+                </Button>
               ) : (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
-                  <Button
-                    variant="whatsapp"
-                    className="w-full h-12"
-                    disabled={!canProceed() || isSubmitting}
-                    onClick={handleSubmit}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <MessageSquare className="h-5 w-5 mr-2" />
-                        Confirmar no WhatsApp
-                      </>
-                    )}
-                  </Button>
-                </motion.div>
+                <Button
+                  variant="whatsapp"
+                  className="h-12 min-w-[180px] flex-shrink-0"
+                  disabled={!canProceed() || isSubmitting}
+                  onClick={handleSubmit}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="h-5 w-5 mr-2" />
+                      Confirmar no WhatsApp
+                    </>
+                  )}
+                </Button>
               )}
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

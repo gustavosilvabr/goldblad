@@ -68,32 +68,12 @@ export function Header({
                 whileHover={{ scale: 1.05 }}
               />
             ) : (
-              <motion.div 
-                className="flex items-center gap-2"
-                whileHover={{ scale: 1.02 }}
-              >
-                <motion.div
-                  className="relative"
-                  animate={{ rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <Scissors className="h-8 w-8 text-primary" />
-                  <motion.div
-                    className="absolute inset-0"
-                    animate={{
-                      boxShadow: [
-                        "0 0 10px hsla(43,74%,49%,0)",
-                        "0 0 20px hsla(43,74%,49%,0.5)",
-                        "0 0 10px hsla(43,74%,49%,0)",
-                      ],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </motion.div>
+              <div className="flex items-center gap-2">
+                <Scissors className="h-8 w-8 text-primary" />
                 <span className="font-display text-xl md:text-2xl text-gradient-gold uppercase tracking-wider">
                   {businessName}
                 </span>
-              </motion.div>
+              </div>
             )}
           </Link>
 
