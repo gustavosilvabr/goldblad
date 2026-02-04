@@ -4,6 +4,7 @@ import { Hero } from "@/components/landing/Hero";
 import { Services } from "@/components/landing/Services";
 import { Team } from "@/components/landing/Team";
 import { Gallery } from "@/components/landing/Gallery";
+import { Subscriptions } from "@/components/landing/Subscriptions";
 import { Reviews } from "@/components/landing/Reviews";
 import { BookingForm } from "@/components/landing/BookingForm";
 import { Location } from "@/components/landing/Location";
@@ -101,6 +102,8 @@ const Index = () => {
           title: g.title,
           is_video: g.is_video
         })) : undefined} />
+
+        <Subscriptions whatsapp={whatsapp} />
         
         <Reviews reviews={reviews.length > 0 ? reviews : undefined} />
         
