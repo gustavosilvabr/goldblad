@@ -104,8 +104,19 @@ export function AdminSidebar({
           })}
         </nav>
 
-        {/* # LOGOUT */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+        {/* # AÇÕES DO RODAPÉ */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-2">
+          {/* # IR PARA O SITE */}
+          <Button
+            variant="outline"
+            className="w-full justify-start"
+            onClick={() => navigate("/")}
+          >
+            <Scissors className="h-5 w-5 mr-3" />
+            Ver Site
+          </Button>
+          
+          {/* # LOGOUT */}
           <Button
             variant="ghost"
             className="w-full justify-start text-muted-foreground hover:text-destructive"
