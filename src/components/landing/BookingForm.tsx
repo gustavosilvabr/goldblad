@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar as CalendarIcon, Clock, User, Phone, Scissors, Check, MessageSquare, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, User, Phone, Scissors, Check, MessageSquare, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
-import { format, addDays, startOfToday, isBefore } from "date-fns";
+import { format, startOfToday, isBefore } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-// # FORMULÁRIO DE AGENDAMENTO PREMIUM
+// # FORMULÁRIO DE AGENDAMENTO COM SALVAMENTO NO BANCO
 interface Barber {
   id: string;
   name: string;
+  photo_url?: string;
 }
 
 interface Service {
@@ -26,8 +29,6 @@ interface BookingFormProps {
   whatsapp?: string;
   openingHour?: string;
   closingHour?: string;
-  blockedSlots?: { date: string; time?: string }[];
-  bookedSlots?: { date: string; time: string }[];
 }
 
 const defaultBarbers: Barber[] = [
@@ -70,9 +71,8 @@ export function BookingForm({
   whatsapp = "5561992030064",
   openingHour = "09:00",
   closingHour = "20:00",
-  blockedSlots = [],
-  bookedSlots = [],
 }: BookingFormProps) {
+  const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -80,11 +80,53 @@ export function BookingForm({
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // # HORÁRIOS BLOQUEADOS E AGENDADOS
+  const [blockedSlots, setBlockedSlots] = useState<{ date: string; time?: string }[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<{ date: string; time: string }[]>([]);
 
   const timeSlots = generateTimeSlots(openingHour, closingHour);
 
-  // # GERAR PRÓXIMOS 14 DIAS
-  const availableDates = Array.from({ length: 14 }, (_, i) => addDays(startOfToday(), i));
+  // # BUSCAR HORÁRIOS OCUPADOS
+  useEffect(() => {
+    const fetchBlockedSlots = async () => {
+      try {
+        // Buscar datas bloqueadas
+        const { data: blocked } = await supabase
+          .from("blocked_dates")
+          .select("blocked_date, blocked_time, is_full_day");
+
+        // Buscar agendamentos existentes (pendentes ou confirmados)
+        const { data: appointments } = await supabase
+          .from("appointments")
+          .select("appointment_date, appointment_time, barber_id")
+          .in("status", ["pending", "confirmed"]);
+
+        if (blocked) {
+          setBlockedSlots(
+            blocked.map((b) => ({
+              date: b.blocked_date,
+              time: b.is_full_day ? undefined : b.blocked_time || undefined,
+            }))
+          );
+        }
+
+        if (appointments) {
+          setBookedSlots(
+            appointments.map((a) => ({
+              date: a.appointment_date,
+              time: a.appointment_time,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching slots:", error);
+      }
+    };
+
+    fetchBlockedSlots();
+  }, []);
 
   // # FORMATAR TELEFONE
   const formatPhone = (value: string) => {
@@ -98,13 +140,24 @@ export function BookingForm({
   const isSlotAvailable = (date: Date, time: string) => {
     const dateStr = format(date, "yyyy-MM-dd");
     
+    // Verificar se está bloqueado
     const isBlocked = blockedSlots.some(
       (slot) => slot.date === dateStr && (!slot.time || slot.time === time)
     );
     
+    // Verificar se já está agendado
     const isBooked = bookedSlots.some(
       (slot) => slot.date === dateStr && slot.time === time
     );
+
+    // Verificar se é horário passado (para hoje)
+    const now = new Date();
+    if (format(date, "yyyy-MM-dd") === format(now, "yyyy-MM-dd")) {
+      const [hours, minutes] = time.split(":").map(Number);
+      const slotTime = new Date(date);
+      slotTime.setHours(hours, minutes, 0, 0);
+      if (slotTime <= now) return false;
+    }
 
     return !isBlocked && !isBooked;
   };
@@ -125,34 +178,143 @@ export function BookingForm({
     );
   };
 
-  // # ENVIAR PARA WHATSAPP
-  const sendToWhatsApp = () => {
-    const barberName = selectedBarber === "any" 
-      ? "Qualquer barbeiro disponível"
-      : barbers.find((b) => b.id === selectedBarber)?.name || "";
+  // # SALVAR E ENVIAR PARA WHATSAPP
+  const handleSubmit = async () => {
+    if (!selectedDate || !selectedTime) return;
     
-    const serviceNames = services
-      .filter((s) => selectedServices.includes(s.id))
-      .map((s) => s.name)
-      .join(", ");
+    setIsSubmitting(true);
+    
+    try {
+      const phoneClean = phone.replace(/\D/g, "");
+      const total = calculateTotal();
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-    const dateFormatted = selectedDate 
-      ? format(selectedDate, "dd/MM/yyyy (EEEE)", { locale: ptBR })
-      : "";
+      // # 1. VERIFICAR/CRIAR CLIENTE
+      let clientId: string | null = null;
+      
+      const { data: existingClient } = await supabase
+        .from("clients")
+        .select("id, total_visits, total_spent")
+        .eq("phone", phoneClean)
+        .maybeSingle();
 
-    const message = encodeURIComponent(
-      `Olá, meu nome é ${name}.\n` +
-      `Gostaria de agendar:\n\n` +
-      `👤 Barbeiro: ${barberName}\n` +
-      `📅 Data: ${dateFormatted}\n` +
-      `⏰ Horário: ${selectedTime}\n` +
-      `✂️ Serviços: ${serviceNames}\n` +
-      `💰 Total: R$ ${calculateTotal().toFixed(2)}\n` +
-      `📞 Telefone: ${phone}\n\n` +
-      `Está disponível?`
-    );
+      if (existingClient) {
+        // Atualizar cliente existente
+        clientId = existingClient.id;
+        await supabase
+          .from("clients")
+          .update({
+            name,
+            total_visits: (existingClient.total_visits || 0) + 1,
+            total_spent: (existingClient.total_spent || 0) + total,
+            last_visit_at: new Date().toISOString(),
+          })
+          .eq("id", clientId);
+      } else {
+        // Criar novo cliente
+        const { data: newClient } = await supabase
+          .from("clients")
+          .insert({
+            name,
+            phone: phoneClean,
+            total_visits: 1,
+            total_spent: total,
+            last_visit_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+        
+        if (newClient) clientId = newClient.id;
+      }
 
-    window.open(`https://wa.me/${whatsapp}?text=${message}`, "_blank");
+      // # 2. CRIAR AGENDAMENTO
+      const barberId = selectedBarber === "any" ? null : selectedBarber;
+      
+      const { data: appointment, error: appointmentError } = await supabase
+        .from("appointments")
+        .insert({
+          client_id: clientId,
+          client_name: name,
+          client_phone: phoneClean,
+          barber_id: barberId,
+          appointment_date: dateStr,
+          appointment_time: selectedTime,
+          total_price: total,
+          status: "pending",
+        })
+        .select("id")
+        .single();
+
+      if (appointmentError) throw appointmentError;
+
+      // # 3. SALVAR SERVIÇOS DO AGENDAMENTO
+      if (appointment) {
+        const serviceRecords = selectedServices.map((serviceId) => {
+          const service = services.find((s) => s.id === serviceId);
+          return {
+            appointment_id: appointment.id,
+            service_id: serviceId,
+            service_name: service?.name || "",
+            price: service?.price || 0,
+          };
+        });
+
+        await supabase.from("appointment_services").insert(serviceRecords);
+      }
+
+      // # 4. REDIRECIONAR PARA WHATSAPP
+      const barberName = selectedBarber === "any" 
+        ? "Qualquer barbeiro disponível"
+        : barbers.find((b) => b.id === selectedBarber)?.name || "";
+      
+      const serviceNames = services
+        .filter((s) => selectedServices.includes(s.id))
+        .map((s) => s.name)
+        .join(", ");
+
+      const dateFormatted = format(selectedDate, "dd/MM/yyyy (EEEE)", { locale: ptBR });
+
+      const message = encodeURIComponent(
+        `Olá! Meu nome é ${name}.\n` +
+        `Gostaria de agendar:\n\n` +
+        `👤 Barbeiro: ${barberName}\n` +
+        `📅 Data: ${dateFormatted}\n` +
+        `⏰ Horário: ${selectedTime}\n` +
+        `✂️ Serviços: ${serviceNames}\n` +
+        `💰 Total: R$ ${total.toFixed(2)}\n` +
+        `📞 Telefone: ${phone}\n\n` +
+        `Aguardo confirmação!`
+      );
+
+      toast({
+        title: "Agendamento realizado!",
+        description: "Você será redirecionado para o WhatsApp.",
+      });
+
+      // Pequeno delay para mostrar o toast
+      setTimeout(() => {
+        window.open(`https://wa.me/${whatsapp}?text=${message}`, "_blank");
+        
+        // Resetar formulário
+        setStep(1);
+        setName("");
+        setPhone("");
+        setSelectedBarber(null);
+        setSelectedServices([]);
+        setSelectedDate(null);
+        setSelectedTime(null);
+      }, 500);
+
+    } catch (error) {
+      console.error("Error creating appointment:", error);
+      toast({
+        title: "Erro ao agendar",
+        description: "Tente novamente ou entre em contato pelo WhatsApp.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // # VALIDAÇÃO
@@ -238,7 +400,7 @@ export function BookingForm({
 
         {/* # FORMULÁRIO */}
         <div className="max-w-2xl mx-auto">
-          <div className="bg-card rounded-2xl md:rounded-3xl border border-border p-5 md:p-8 shadow-xl">
+          <div className="bg-card rounded-2xl md:rounded-3xl border border-border p-5 md:p-8 shadow-xl relative overflow-hidden">
             {/* # DECORAÇÃO SUTIL */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -346,7 +508,20 @@ export function BookingForm({
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <p className="font-semibold text-foreground">{barber.name}</p>
+                      <div className="flex items-center gap-3">
+                        {barber.photo_url ? (
+                          <img
+                            src={barber.photo_url}
+                            alt={barber.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                            <User className="h-6 w-6 text-primary" />
+                          </div>
+                        )}
+                        <p className="font-semibold text-foreground">{barber.name}</p>
+                      </div>
                       {selectedBarber === barber.id && (
                         <motion.div
                           initial={{ scale: 0 }}
@@ -606,6 +781,7 @@ export function BookingForm({
                     variant="outline"
                     className="w-full h-12"
                     onClick={() => setStep(step - 1)}
+                    disabled={isSubmitting}
                   >
                     Voltar
                   </Button>
@@ -635,11 +811,20 @@ export function BookingForm({
                   <Button
                     variant="whatsapp"
                     className="w-full h-12"
-                    disabled={!canProceed()}
-                    onClick={sendToWhatsApp}
+                    disabled={!canProceed() || isSubmitting}
+                    onClick={handleSubmit}
                   >
-                    <MessageSquare className="h-5 w-5 mr-2" />
-                    Confirmar no WhatsApp
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="h-5 w-5 mr-2" />
+                        Confirmar no WhatsApp
+                      </>
+                    )}
                   </Button>
                 </motion.div>
               )}

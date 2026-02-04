@@ -1,6 +1,7 @@
-import { MapPin, Clock, Phone, Instagram } from "lucide-react";
+import { MapPin, Clock, Phone, Instagram, Navigation } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-// # SEÇÃO DE LOCALIZAÇÃO
+// # SEÇÃO DE LOCALIZAÇÃO COM MAPA MELHORADO
 interface LocationProps {
   address?: string;
   phone?: string;
@@ -11,86 +12,115 @@ interface LocationProps {
 }
 
 export function Location({
-  address = "Rua das Tesouras, 123 - Brasília, DF",
+  address = "Localizada na rua de baixo do Supermercado Goiás",
   phone = "(61) 99203-0064",
   instagram = "@gold_blad_barbearia",
   openingHours = "Seg-Dom: 09h às 20h",
-  gpsLat = -15.7942,
-  gpsLng = -47.8822,
+  gpsLat,
+  gpsLng,
 }: LocationProps) {
-  const mapUrl = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3839.0!2d${gpsLng}!3d${gpsLat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTXCsDQ3JzM5LjEiUyA0N8KwNTInNTUuOSJX!5e0!3m2!1spt-BR!2sbr!4v1234567890`;
+  // # URL do mapa usando coordenadas ou endereço
+  const hasCoordinates = gpsLat && gpsLng && gpsLat !== 0 && gpsLng !== 0;
+  
+  const mapEmbedUrl = hasCoordinates
+    ? `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${gpsLat},${gpsLng}&zoom=16`
+    : `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(address)}&zoom=16`;
+
+  // # URL para abrir no Google Maps app/web
+  const mapsUrl = hasCoordinates
+    ? `https://www.google.com/maps/search/?api=1&query=${gpsLat},${gpsLng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
   return (
-    <section id="localizacao" className="py-20 md:py-32 relative overflow-hidden">
+    <section id="localizacao" className="py-16 md:py-24 relative overflow-hidden">
       {/* # BACKGROUND */}
       <div className="absolute inset-0 bg-card" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* # TÍTULO */}
-        <div className="text-center mb-12">
-          <span className="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+        <div className="text-center mb-10">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             Localização
           </span>
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-gradient-gold mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-gradient-gold mb-3">
             Onde Estamos
           </h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {address}
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
           {/* # INFORMAÇÕES */}
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <MapPin className="h-6 w-6 text-primary" />
+          <div className="space-y-5">
+            <div className="flex items-start gap-4 p-4 bg-background/50 rounded-xl border border-border">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <MapPin className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Endereço</h3>
-                <p className="text-muted-foreground">{address}</p>
+                <p className="text-muted-foreground text-sm">{address}</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Clock className="h-6 w-6 text-primary" />
+            <div className="flex items-start gap-4 p-4 bg-background/50 rounded-xl border border-border">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Clock className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground mb-1">Horário de Funcionamento</h3>
-                <p className="text-muted-foreground">{openingHours}</p>
+                <h3 className="font-semibold text-foreground mb-1">Horário</h3>
+                <p className="text-muted-foreground text-sm">{openingHours}</p>
+                <p className="text-xs text-muted-foreground mt-1">Segunda a Domingo</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Phone className="h-6 w-6 text-primary" />
+            <div className="flex items-start gap-4 p-4 bg-background/50 rounded-xl border border-border">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Phone className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Telefone</h3>
-                <p className="text-muted-foreground">{phone}</p>
+                <a
+                  href={`tel:${phone?.replace(/\D/g, "")}`}
+                  className="text-primary hover:text-primary/80 transition-colors text-sm"
+                >
+                  {phone}
+                </a>
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Instagram className="h-6 w-6 text-primary" />
+            <div className="flex items-start gap-4 p-4 bg-background/50 rounded-xl border border-border">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Instagram className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Instagram</h3>
                 <a
-                  href={`https://instagram.com/${instagram.replace("@", "")}`}
+                  href={`https://instagram.com/${instagram?.replace("@", "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80 transition-colors"
+                  className="text-primary hover:text-primary/80 transition-colors text-sm"
                 >
                   {instagram}
                 </a>
               </div>
             </div>
+
+            {/* # BOTÃO DE NAVEGAÇÃO */}
+            <Button
+              variant="hero"
+              className="w-full"
+              onClick={() => window.open(mapsUrl, "_blank")}
+            >
+              <Navigation className="h-5 w-5 mr-2" />
+              Abrir no Google Maps
+            </Button>
           </div>
 
           {/* # MAPA */}
-          <div className="rounded-2xl overflow-hidden border border-border h-[300px] md:h-full min-h-[300px]">
+          <div className="rounded-2xl overflow-hidden border border-border h-[350px] md:h-full min-h-[350px] bg-secondary">
             <iframe
-              src={mapUrl}
+              src={mapEmbedUrl}
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -98,6 +128,7 @@ export function Location({
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               title="Localização da barbearia"
+              className="w-full h-full"
             />
           </div>
         </div>
