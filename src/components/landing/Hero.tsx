@@ -253,7 +253,7 @@ export function Hero({
               variant="hero"
               size="xl"
               onClick={scrollToBooking}
-              className="relative overflow-hidden group"
+              className="relative overflow-hidden group px-8 py-4"
             >
               <motion.span
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"

@@ -3,8 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Scissors, Loader2, Eye, EyeOff, LogIn } from "lucide-react";
+import { Scissors, Loader2, Eye, EyeOff, LogIn, Key } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // # PÁGINA DE LOGIN ADMIN
 export default function AdminLogin() {
@@ -15,6 +23,13 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+
+  // # ALTERAR SENHA
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -92,6 +107,88 @@ export default function AdminLogin() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // # ALTERAR SENHA
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      toast({
+        title: "Preencha todos os campos",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      toast({
+        title: "Senhas não conferem",
+        description: "A nova senha e a confirmação devem ser iguais.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Senha muito curta",
+        description: "A senha deve ter pelo menos 6 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      // # Primeiro fazer login com a senha atual para verificar
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: currentPassword,
+      });
+
+      if (signInError) {
+        toast({
+          title: "Senha atual incorreta",
+          description: "Verifique sua senha atual e tente novamente.",
+          variant: "destructive",
+        });
+        setChangingPassword(false);
+        return;
+      }
+
+      // # Atualizar para a nova senha
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        toast({
+          title: "Erro ao alterar senha",
+          description: updateError.message,
+          variant: "destructive",
+        });
+        setChangingPassword(false);
+        return;
+      }
+
+      toast({
+        title: "Senha alterada com sucesso!",
+        description: "Sua nova senha já está ativa.",
+      });
+
+      setChangePasswordOpen(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao alterar a senha.",
+        variant: "destructive",
+      });
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -174,6 +271,91 @@ export default function AdminLogin() {
             )}
             Entrar
           </Button>
+
+          {/* # ALTERAR SENHA */}
+          <Dialog open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-muted-foreground"
+              >
+                <Key className="h-4 w-4 mr-2" />
+                Alterar Senha
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-card border-border">
+              <DialogHeader>
+                <DialogTitle>Alterar Senha</DialogTitle>
+                <DialogDescription>
+                  Para alterar sua senha, informe a senha atual e a nova senha.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Email
+                  </label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@goldblade.com"
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Senha Atual
+                  </label>
+                  <Input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Nova Senha
+                  </label>
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Confirmar Nova Senha
+                  </label>
+                  <Input
+                    type="password"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <Button
+                  onClick={handleChangePassword}
+                  variant="hero"
+                  className="w-full"
+                  disabled={changingPassword}
+                >
+                  {changingPassword ? (
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  ) : (
+                    <Key className="h-5 w-5 mr-2" />
+                  )}
+                  Alterar Senha
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </form>
 
         {/* # VOLTAR AO SITE */}
