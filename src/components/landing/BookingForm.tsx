@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, User, Phone, Scissors, Check, MessageSquare, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, User, Phone, Scissors, Check, MessageSquare, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { format, addDays, startOfToday } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { format, addDays, startOfToday, isBefore } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // # FORMULÁRIO DE AGENDAMENTO PREMIUM
@@ -60,7 +61,7 @@ const stepTitles = [
   { title: "Seus Dados", icon: User },
   { title: "Barbeiro", icon: Scissors },
   { title: "Serviços", icon: Scissors },
-  { title: "Data e Hora", icon: Calendar },
+  { title: "Data e Hora", icon: CalendarIcon },
 ];
 
 export function BookingForm({
@@ -484,89 +485,145 @@ export function BookingForm({
                 className="space-y-6"
               >
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Calendar className="h-6 w-6 text-primary" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-display font-semibold text-foreground">
+                    <h3 className="text-lg sm:text-xl font-display font-semibold text-foreground">
                       Data e Horário
                     </h3>
-                    <p className="text-sm text-muted-foreground">Quando você deseja vir?</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Quando você deseja vir?</p>
                   </div>
                 </div>
 
-                {/* # DATAS */}
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-3">Escolha o dia</p>
-                  <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
-                    {availableDates.map((date, index) => (
-                      <motion.button
-                        key={date.toISOString()}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.03 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                          setSelectedDate(date);
+                {/* # LAYOUT RESPONSIVO: CALENDÁRIO + HORÁRIOS */}
+                <div className="flex flex-col lg:flex-row gap-6">
+                  {/* # CALENDÁRIO COMPLETO */}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4 text-primary" />
+                      Escolha o dia
+                    </p>
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-secondary/30 rounded-2xl p-2 sm:p-4 border border-border flex justify-center"
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate || undefined}
+                        onSelect={(date) => {
+                          setSelectedDate(date || null);
                           setSelectedTime(null);
                         }}
-                        className={`flex-shrink-0 p-3 rounded-xl border-2 min-w-[80px] transition-all ${
-                          selectedDate?.toDateString() === date.toDateString()
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        }`}
-                      >
-                        <p className="text-xs text-muted-foreground uppercase font-medium">
-                          {format(date, "EEE", { locale: ptBR })}
-                        </p>
-                        <p className="text-2xl font-bold text-foreground">
-                          {format(date, "dd")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(date, "MMM", { locale: ptBR })}
-                        </p>
-                      </motion.button>
-                    ))}
+                        disabled={(date) => isBefore(date, startOfToday())}
+                        locale={ptBR}
+                        className="pointer-events-auto w-full"
+                        classNames={{
+                          months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
+                          month: "space-y-4 w-full",
+                          caption: "flex justify-center pt-1 relative items-center",
+                          caption_label: "text-base sm:text-lg font-semibold text-foreground",
+                          nav: "space-x-1 flex items-center",
+                          nav_button: "h-8 w-8 sm:h-9 sm:w-9 bg-primary/10 hover:bg-primary/20 rounded-lg p-0 text-primary hover:text-primary transition-colors",
+                          nav_button_previous: "absolute left-1",
+                          nav_button_next: "absolute right-1",
+                          table: "w-full border-collapse",
+                          head_row: "flex w-full",
+                          head_cell: "text-muted-foreground rounded-md w-full font-medium text-xs sm:text-sm py-2",
+                          row: "flex w-full mt-1 sm:mt-2",
+                          cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 flex-1 aspect-square",
+                          day: "h-full w-full p-0 font-medium rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center text-sm sm:text-base",
+                          day_range_end: "day-range-end",
+                          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground shadow-gold",
+                          day_today: "bg-accent text-accent-foreground font-bold ring-2 ring-primary/50",
+                          day_outside: "day-outside text-muted-foreground opacity-30",
+                          day_disabled: "text-muted-foreground opacity-30 cursor-not-allowed hover:bg-transparent",
+                          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                          day_hidden: "invisible",
+                        }}
+                      />
+                    </motion.div>
                   </div>
-                </div>
 
-                {/* # HORÁRIOS */}
-                {selectedDate && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
+                  {/* # HORÁRIOS */}
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
                       <Clock className="h-4 w-4 text-primary" />
                       Escolha o horário
                     </p>
-                    <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-                      {timeSlots.map((time, index) => {
-                        const available = isSlotAvailable(selectedDate, time);
-                        return (
-                          <motion.button
-                            key={time}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: index * 0.02 }}
-                            whileHover={available ? { scale: 1.05 } : {}}
-                            whileTap={available ? { scale: 0.95 } : {}}
-                            onClick={() => available && setSelectedTime(time)}
-                            disabled={!available}
-                            className={`p-3 rounded-lg text-sm font-semibold transition-all ${
-                              selectedTime === time
-                                ? "bg-primary text-primary-foreground shadow-gold"
-                                : available
-                                ? "bg-secondary text-foreground hover:bg-primary/20"
-                                : "bg-destructive/20 text-destructive line-through cursor-not-allowed opacity-50"
-                            }`}
-                          >
-                            {time}
-                          </motion.button>
-                        );
-                      })}
+                    
+                    {selectedDate ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-secondary/30 rounded-2xl p-3 sm:p-4 border border-border"
+                      >
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-3 text-center">
+                          {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                        </p>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                          {timeSlots.map((time, index) => {
+                            const available = isSlotAvailable(selectedDate, time);
+                            return (
+                              <motion.button
+                                key={time}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: index * 0.02 }}
+                                whileHover={available ? { scale: 1.05 } : {}}
+                                whileTap={available ? { scale: 0.95 } : {}}
+                                onClick={() => available && setSelectedTime(time)}
+                                disabled={!available}
+                                className={`p-2 sm:p-3 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                                  selectedTime === time
+                                    ? "bg-primary text-primary-foreground shadow-gold"
+                                    : available
+                                    ? "bg-card text-foreground hover:bg-primary/20 border border-border"
+                                    : "bg-destructive/10 text-destructive/50 line-through cursor-not-allowed"
+                                }`}
+                              >
+                                {time}
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="bg-secondary/30 rounded-2xl p-6 sm:p-8 border border-border flex flex-col items-center justify-center min-h-[200px] lg:min-h-[300px]"
+                      >
+                        <CalendarIcon className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50 mb-3" />
+                        <p className="text-sm sm:text-base text-muted-foreground text-center">
+                          Selecione uma data no calendário para ver os horários disponíveis
+                        </p>
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+
+                {/* # RESUMO DA SELEÇÃO */}
+                {selectedDate && selectedTime && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-primary/10 rounded-xl p-3 sm:p-4 border border-primary/30 flex flex-col sm:flex-row items-center justify-between gap-2"
+                  >
+                    <div className="flex items-center gap-2 text-sm sm:text-base">
+                      <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                      <span className="text-foreground font-medium">
+                        {format(selectedDate, "dd/MM/yyyy", { locale: ptBR })}
+                      </span>
                     </div>
+                    <div className="flex items-center gap-2 text-sm sm:text-base">
+                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                      <span className="text-foreground font-medium">{selectedTime}</span>
+                    </div>
+                    <span className="text-primary font-bold text-sm sm:text-base">
+                      {formatPrice(calculateTotal())}
+                    </span>
                   </motion.div>
                 )}
               </motion.div>
