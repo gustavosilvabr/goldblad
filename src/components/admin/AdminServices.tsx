@@ -205,14 +205,14 @@ export function AdminServices() {
   const additionalServices = services.filter((s) => s.is_additional);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 overflow-hidden">
       {/* # TÍTULO */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-gradient-gold">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-gradient-gold break-words">
             Serviços
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm sm:text-base">
             Gerencie os serviços oferecidos
           </p>
         </div>
@@ -341,18 +341,18 @@ export function AdminServices() {
                   !service.is_active && "opacity-50"
                 }`}
               >
-                <div className="flex items-center gap-4">
-                  <Scissors className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium text-foreground">{service.name}</p>
+                <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
+                  <Scissors className="h-5 w-5 text-primary flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-foreground truncate">{service.name}</p>
                     <p className="text-sm text-muted-foreground">
                       {service.duration_minutes} min
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-primary">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <span className="font-bold text-primary whitespace-nowrap">
                     {formatPrice(service.price)}
                   </span>
                   <Button
@@ -403,18 +403,18 @@ export function AdminServices() {
                   !service.is_active && "opacity-50"
                 }`}
               >
-                <div className="flex items-center gap-4">
-                  <Scissors className="h-5 w-5 text-primary/60" />
-                  <div>
-                    <p className="font-medium text-foreground">{service.name}</p>
+                <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
+                  <Scissors className="h-5 w-5 text-primary/60 flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-foreground truncate">{service.name}</p>
                     <p className="text-sm text-muted-foreground">
                       {service.duration_minutes} min
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-primary">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <span className="font-bold text-primary whitespace-nowrap">
                     {formatPrice(service.price)}
                   </span>
                   <Button

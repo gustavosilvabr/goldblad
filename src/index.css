@@ -109,9 +109,14 @@
     @apply border-border;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
   }
 
   /* # TIPOGRAFIA - Fonte display para títulos */
@@ -120,6 +125,8 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.02em;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }
 

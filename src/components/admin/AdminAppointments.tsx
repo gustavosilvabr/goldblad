@@ -273,13 +273,13 @@ export function AdminAppointments() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 overflow-hidden">
       {/* # TÍTULO */}
-      <div>
-        <h1 className="text-3xl font-display font-bold text-gradient-gold">
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-gradient-gold break-words">
           Agendamentos
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm sm:text-base">
           Gerencie os agendamentos da barbearia
         </p>
       </div>

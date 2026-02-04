@@ -183,13 +183,13 @@ export function AdminClients() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 overflow-hidden">
       {/* # TÍTULO */}
-      <div>
-        <h1 className="text-3xl font-display font-bold text-gradient-gold">
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-gradient-gold break-words">
           Clientes
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm sm:text-base">
           Histórico completo e informações dos clientes
         </p>
       </div>
@@ -221,7 +221,7 @@ export function AdminClients() {
       </div>
 
       {/* # ESTATÍSTICAS */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-card rounded-xl border border-border p-4">
           <p className="text-sm text-muted-foreground">Total de Clientes</p>
           <p className="text-2xl font-bold text-foreground">{clients.length}</p>

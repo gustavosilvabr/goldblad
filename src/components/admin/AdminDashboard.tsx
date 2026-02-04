@@ -119,13 +119,13 @@ export function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 overflow-hidden">
       {/* # TÍTULO */}
-      <div>
-        <h1 className="text-3xl font-display font-bold text-gradient-gold">
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold text-gradient-gold break-words">
           Dashboard
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm sm:text-base">
           Bem-vindo ao painel administrativo
         </p>
       </div>
@@ -240,14 +240,14 @@ export function AdminDashboard() {
             {recentAppointments.map((appointment) => (
               <div
                 key={appointment.id}
-                className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg"
+                className="flex flex-wrap items-center justify-between gap-3 p-4 bg-secondary/50 rounded-lg"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Clock className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="font-medium text-foreground">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-foreground truncate">
                       {appointment.client_name}
                     </p>
                     <p className="text-sm text-muted-foreground">
@@ -255,11 +255,11 @@ export function AdminDashboard() {
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex-shrink-0">
                   <p className="font-bold text-primary">
                     {formatCurrency(Number(appointment.total_price) || 0)}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground truncate max-w-[100px]">
                     {appointment.barbers?.name || "Sem barbeiro"}
                   </p>
                 </div>

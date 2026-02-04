@@ -258,19 +258,19 @@ export function AdminFinancial() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 overflow-hidden">
       {/* # TÍTULO E SELETOR DE MÊS */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-gradient-gold">
+      <div className="flex flex-wrap justify-between items-start sm:items-center gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-gradient-gold break-words">
             Financeiro
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm sm:text-base">
             Controle de faturamento, custos e lucro
           </p>
         </div>
         <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48 flex-shrink-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
