@@ -274,6 +274,42 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          expense_date: string
+          expense_type: string
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string
+          expense_date?: string
+          expense_type?: string
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          expense_date?: string
+          expense_type?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gallery: {
         Row: {
           created_at: string | null
@@ -301,6 +337,36 @@ export type Database = {
           is_active?: boolean | null
           is_video?: boolean | null
           title?: string | null
+        }
+        Relationships: []
+      }
+      monthly_goals: {
+        Row: {
+          appointments_goal: number
+          created_at: string
+          id: string
+          month_year: string
+          revenue_goal: number
+          subscribers_goal: number
+          updated_at: string
+        }
+        Insert: {
+          appointments_goal?: number
+          created_at?: string
+          id?: string
+          month_year: string
+          revenue_goal?: number
+          subscribers_goal?: number
+          updated_at?: string
+        }
+        Update: {
+          appointments_goal?: number
+          created_at?: string
+          id?: string
+          month_year?: string
+          revenue_goal?: number
+          subscribers_goal?: number
+          updated_at?: string
         }
         Relationships: []
       }

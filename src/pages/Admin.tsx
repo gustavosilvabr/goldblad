@@ -10,6 +10,7 @@ import { AdminAppointments } from "@/components/admin/AdminAppointments";
 import { AdminClients } from "@/components/admin/AdminClients";
 import { AdminGallery } from "@/components/admin/AdminGallery";
 import { AdminReviews } from "@/components/admin/AdminReviews";
+import { AdminFinancial } from "@/components/admin/AdminFinancial";
 import { Loader2 } from "lucide-react";
 
 // # PÁGINA DO PAINEL ADMIN
@@ -87,6 +88,8 @@ export default function Admin() {
         return <AdminGallery />;
       case "reviews":
         return <AdminReviews />;
+      case "financial":
+        return <AdminFinancial />;
       default:
         return <AdminDashboard />;
     }

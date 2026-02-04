@@ -9,7 +9,9 @@ import {
   Star,
   LogOut,
   Menu,
-  X
+  X,
+  DollarSign,
+  ExternalLink
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +29,7 @@ const menuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "appointments", label: "Agendamentos", icon: Calendar },
   { id: "clients", label: "Clientes", icon: UserCheck },
+  { id: "financial", label: "Financeiro", icon: DollarSign },
   { id: "barbers", label: "Equipe", icon: Users },
   { id: "services", label: "Serviços", icon: Scissors },
   { id: "gallery", label: "Galeria", icon: Image },
