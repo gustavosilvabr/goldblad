@@ -83,8 +83,8 @@ export function BookingForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // # HORÁRIOS BLOQUEADOS E AGENDADOS
-  const [blockedSlots, setBlockedSlots] = useState<{ date: string; time?: string }[]>([]);
-  const [bookedSlots, setBookedSlots] = useState<{ date: string; time: string }[]>([]);
+  const [blockedSlots, setBlockedSlots] = useState<{ date: string; time?: string; barber_id?: string }[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<{ date: string; time: string; barber_id?: string }[]>([]);
 
   const timeSlots = generateTimeSlots(openingHour, closingHour);
 
@@ -95,7 +95,7 @@ export function BookingForm({
         // Buscar datas bloqueadas
         const { data: blocked } = await supabase
           .from("blocked_dates")
-          .select("blocked_date, blocked_time, is_full_day");
+          .select("blocked_date, blocked_time, is_full_day, barber_id");
 
         // Buscar agendamentos existentes (pendentes ou confirmados)
         const { data: appointments } = await supabase
@@ -108,6 +108,7 @@ export function BookingForm({
             blocked.map((b) => ({
               date: b.blocked_date,
               time: b.is_full_day ? undefined : b.blocked_time || undefined,
+              barber_id: b.barber_id || undefined,
             }))
           );
         }
@@ -117,6 +118,7 @@ export function BookingForm({
             appointments.map((a) => ({
               date: a.appointment_date,
               time: a.appointment_time,
+              barber_id: a.barber_id || undefined,
             }))
           );
         }
@@ -140,15 +142,31 @@ export function BookingForm({
   const isSlotAvailable = (date: Date, time: string) => {
     const dateStr = format(date, "yyyy-MM-dd");
     
-    // Verificar se está bloqueado
+    // Verificar se está bloqueado (para o barbeiro selecionado ou bloqueio geral)
     const isBlocked = blockedSlots.some(
-      (slot) => slot.date === dateStr && (!slot.time || slot.time === time)
+      (slot) => 
+        slot.date === dateStr && 
+        (!slot.time || slot.time === time) &&
+        (!slot.barber_id || slot.barber_id === selectedBarber || selectedBarber === "any")
     );
     
-    // Verificar se já está agendado
-    const isBooked = bookedSlots.some(
-      (slot) => slot.date === dateStr && slot.time === time
-    );
+    // Verificar se já está agendado para o barbeiro selecionado
+    const isBooked = bookedSlots.some((slot) => {
+      if (slot.date !== dateStr || slot.time !== time) return false;
+      
+      // Se o usuário escolheu "qualquer barbeiro", verifica todos os slots
+      if (selectedBarber === "any") {
+        // Se todos os barbeiros estão ocupados nesse horário, bloqueia
+        const barbersWithSlot = bookedSlots.filter(
+          (s) => s.date === dateStr && s.time === time
+        );
+        // Se há menos agendamentos que barbeiros, ainda há disponibilidade
+        return barbersWithSlot.length >= barbers.length;
+      }
+      
+      // Se escolheu barbeiro específico, verifica apenas para ele
+      return slot.barber_id === selectedBarber;
+    });
 
     // Verificar se é horário passado (para hoje)
     const now = new Date();
@@ -189,43 +207,19 @@ export function BookingForm({
       const total = calculateTotal();
       const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-      // # 1. VERIFICAR/CRIAR CLIENTE
+      // # 1. VERIFICAR SE CLIENTE EXISTE (apenas para referência)
       let clientId: string | null = null;
       
       const { data: existingClient } = await supabase
         .from("clients")
-        .select("id, total_visits, total_spent")
+        .select("id")
         .eq("phone", phoneClean)
         .maybeSingle();
 
       if (existingClient) {
-        // Atualizar cliente existente
         clientId = existingClient.id;
-        await supabase
-          .from("clients")
-          .update({
-            name,
-            total_visits: (existingClient.total_visits || 0) + 1,
-            total_spent: (existingClient.total_spent || 0) + total,
-            last_visit_at: new Date().toISOString(),
-          })
-          .eq("id", clientId);
-      } else {
-        // Criar novo cliente
-        const { data: newClient } = await supabase
-          .from("clients")
-          .insert({
-            name,
-            phone: phoneClean,
-            total_visits: 1,
-            total_spent: total,
-            last_visit_at: new Date().toISOString(),
-          })
-          .select("id")
-          .single();
-        
-        if (newClient) clientId = newClient.id;
       }
+      // NOTA: O cliente só será criado/atualizado quando o agendamento for CONCLUÍDO
 
       // # 2. CRIAR AGENDAMENTO
       const barberId = selectedBarber === "any" ? null : selectedBarber;

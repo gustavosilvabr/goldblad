@@ -129,6 +129,45 @@ export function AdminAppointments() {
 
       if (error) throw error;
 
+      // # SE CONCLUÍDO, CRIAR/ATUALIZAR CLIENTE
+      if (status === "completed") {
+        const appointment = appointments.find((a) => a.id === id);
+        if (appointment) {
+          const phoneClean = appointment.client_phone.replace(/\D/g, "");
+          
+          // Verificar se cliente existe
+          const { data: existingClient } = await supabase
+            .from("clients")
+            .select("id, total_visits, total_spent")
+            .eq("phone", phoneClean)
+            .maybeSingle();
+
+          if (existingClient) {
+            // Atualizar cliente existente
+            await supabase
+              .from("clients")
+              .update({
+                name: appointment.client_name,
+                total_visits: (existingClient.total_visits || 0) + 1,
+                total_spent: (existingClient.total_spent || 0) + Number(appointment.total_price || 0),
+                last_visit_at: new Date().toISOString(),
+              })
+              .eq("id", existingClient.id);
+          } else {
+            // Criar novo cliente
+            await supabase
+              .from("clients")
+              .insert({
+                name: appointment.client_name,
+                phone: phoneClean,
+                total_visits: 1,
+                total_spent: Number(appointment.total_price || 0),
+                last_visit_at: new Date().toISOString(),
+              });
+          }
+        }
+      }
+
       fetchAppointments();
       toast({
         title: "Status atualizado",

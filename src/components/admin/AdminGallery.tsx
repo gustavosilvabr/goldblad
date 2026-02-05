@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash2, Save, Image as ImageIcon } from "lucide-react";
+import { Loader2, Plus, Trash2, Save, Image as ImageIcon, Upload } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-// # GESTÃO DA GALERIA
+// # GESTÃO DA GALERIA COM UPLOAD DE ARQUIVOS
 interface GalleryItem {
   id: string;
   title?: string;
@@ -26,10 +26,14 @@ export function AdminGallery() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     title: "",
     image_url: "",
+    file: null as File | null,
+    preview: "",
   });
 
   useEffect(() => {
@@ -52,21 +56,81 @@ export function AdminGallery() {
     }
   };
 
+  // # UPLOAD DE ARQUIVO
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Arquivo inválido",
+        description: "Por favor, selecione uma imagem.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar tamanho (máx 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "O tamanho máximo é 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Criar preview
+    const preview = URL.createObjectURL(file);
+    setForm({ ...form, file, preview, image_url: "" });
+  };
+
+  // # SALVAR IMAGEM
   const handleSave = async () => {
-    if (!form.image_url.trim()) {
+    if (!form.file && !form.image_url.trim()) {
       toast({
         title: "Erro",
-        description: "URL da imagem é obrigatória",
+        description: "Selecione uma imagem para upload",
         variant: "destructive",
       });
       return;
     }
 
     setSaving(true);
+    setUploading(true);
+
     try {
+      let imageUrl = form.image_url;
+
+      // Se tem arquivo, fazer upload para o Supabase Storage
+      if (form.file) {
+        const fileExt = form.file.name.split(".").pop();
+        const fileName = `gallery/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("barbershop")
+          .upload(fileName, form.file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Obter URL pública
+        const { data: urlData } = supabase.storage
+          .from("barbershop")
+          .getPublicUrl(fileName);
+
+        imageUrl = urlData.publicUrl;
+      }
+
+      setUploading(false);
+
+      // Salvar no banco
       const { error } = await supabase.from("gallery").insert({
         title: form.title || null,
-        image_url: form.image_url,
+        image_url: imageUrl,
         display_order: items.length,
       });
 
@@ -78,7 +142,8 @@ export function AdminGallery() {
       });
 
       setIsDialogOpen(false);
-      setForm({ title: "", image_url: "" });
+      setForm({ title: "", image_url: "", file: null, preview: "" });
+      if (fileInputRef.current) fileInputRef.current.value = "";
       fetchGallery();
     } catch (error) {
       console.error("Error saving image:", error);
@@ -89,6 +154,7 @@ export function AdminGallery() {
       });
     } finally {
       setSaving(false);
+      setUploading(false);
     }
   };
 
@@ -133,6 +199,16 @@ export function AdminGallery() {
     }
   };
 
+  // Limpar preview ao fechar dialog
+  const handleDialogChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      if (form.preview) URL.revokeObjectURL(form.preview);
+      setForm({ title: "", image_url: "", file: null, preview: "" });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -154,7 +230,7 @@ export function AdminGallery() {
           </p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -181,46 +257,68 @@ export function AdminGallery() {
                 />
               </div>
 
+              {/* # UPLOAD DE ARQUIVO */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  URL da Imagem *
+                  Selecione uma imagem *
                 </label>
-                <Input
-                  value={form.image_url}
-                  onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                  placeholder="https://..."
-                  className="bg-secondary border-border"
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                >
+                  {form.preview ? (
+                    <img
+                      src={form.preview}
+                      alt="Preview"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload className="h-10 w-10 text-muted-foreground" />
+                      <p className="text-muted-foreground">
+                        Clique para selecionar uma imagem
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        JPG, PNG ou WEBP (máx. 5MB)
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
                 />
               </div>
 
-              {form.image_url && (
-                <div className="rounded-lg overflow-hidden border border-border">
-                  <img
-                    src={form.image_url}
-                    alt="Preview"
-                    className="w-full h-48 object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/placeholder.svg";
-                    }}
-                  />
-                </div>
+              {form.file && (
+                <p className="text-sm text-muted-foreground">
+                  Arquivo selecionado: {form.file.name}
+                </p>
               )}
 
               <div className="flex gap-2 pt-4">
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setIsDialogOpen(false)}
+                  onClick={() => handleDialogChange(false)}
                 >
                   Cancelar
                 </Button>
-                <Button className="flex-1" onClick={handleSave} disabled={saving}>
+                <Button className="flex-1" onClick={handleSave} disabled={saving || !form.file}>
                   {saving ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      {uploading ? "Enviando..." : "Salvando..."}
+                    </>
                   ) : (
-                    <Save className="h-4 w-4 mr-2" />
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar
+                    </>
                   )}
-                  Salvar
                 </Button>
               </div>
             </div>

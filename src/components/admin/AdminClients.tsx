@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +18,10 @@ import {
   DollarSign,
   MessageSquare,
   History,
-  X,
-  Scissors,
+  Send,
+  Edit,
+  Trash2,
+  Save,
   Clock
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
@@ -47,6 +50,7 @@ interface Appointment {
 }
 
 export function AdminClients() {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,6 +58,19 @@ export function AdminClients() {
   const [clientHistory, setClientHistory] = useState<Appointment[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [settings, setSettings] = useState<any>(null);
+  
+  // # ESTADOS DE EDIÇÃO
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+  });
+  const [saving, setSaving] = useState(false);
+  
+  // # ESTADO PARA ENVIO EM MASSA
+  const [sendingReminders, setSendingReminders] = useState(false);
 
   useEffect(() => {
     fetchClients();
@@ -114,6 +131,62 @@ export function AdminClients() {
     }
   };
 
+  // # EDITAR CLIENTE
+  const handleEdit = (client: Client) => {
+    setEditingClient(client);
+    setEditForm({
+      name: client.name,
+      phone: client.phone,
+      email: client.email || "",
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingClient) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({
+          name: editForm.name,
+          phone: editForm.phone.replace(/\D/g, ""),
+          email: editForm.email || null,
+        })
+        .eq("id", editingClient.id);
+
+      if (error) throw error;
+
+      toast({ title: "Cliente atualizado!" });
+      setEditDialogOpen(false);
+      setEditingClient(null);
+      fetchClients();
+    } catch (error) {
+      console.error("Error updating client:", error);
+      toast({ title: "Erro ao atualizar", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // # EXCLUIR CLIENTE
+  const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este cliente? O histórico será mantido nos agendamentos.")) return;
+
+    try {
+      const { error } = await supabase.from("clients").delete().eq("id", id);
+
+      if (error) throw error;
+
+      toast({ title: "Cliente excluído!" });
+      fetchClients();
+    } catch (error) {
+      console.error("Error deleting client:", error);
+      toast({ title: "Erro ao excluir", variant: "destructive" });
+    }
+  };
+
   // # ENVIAR MENSAGEM WHATSAPP
   const sendWhatsAppReminder = (client: Client) => {
     const message = settings?.reminder_message || 
@@ -123,6 +196,42 @@ export function AdminClients() {
     window.open(`https://wa.me/55${phoneClean}?text=${encodeURIComponent(personalizedMessage)}`, "_blank");
   };
 
+  // # ENVIAR LEMBRETES EM MASSA (15+ dias)
+  const sendBulkReminders = () => {
+    const clientsToRemind = clients.filter(needsReminder);
+    
+    if (clientsToRemind.length === 0) {
+      toast({
+        title: "Nenhum cliente",
+        description: "Não há clientes com mais de 15 dias sem visita.",
+      });
+      return;
+    }
+
+    setSendingReminders(true);
+    
+    // Gerar lista de links para WhatsApp
+    const message = settings?.reminder_message || 
+      "Olá {NOME}! ✂️💈 Já faz um tempo desde seu último corte. Que tal agendar novamente?";
+    
+    // Abrir cada link com um pequeno delay
+    clientsToRemind.forEach((client, index) => {
+      setTimeout(() => {
+        const personalizedMessage = message.replace("{NOME}", client.name.split(" ")[0]);
+        const phoneClean = client.phone.replace(/\D/g, "");
+        window.open(`https://wa.me/55${phoneClean}?text=${encodeURIComponent(personalizedMessage)}`, "_blank");
+        
+        if (index === clientsToRemind.length - 1) {
+          setSendingReminders(false);
+          toast({
+            title: "Lembretes enviados!",
+            description: `${clientsToRemind.length} janela(s) do WhatsApp aberta(s).`,
+          });
+        }
+      }, index * 1000); // 1 segundo entre cada
+    });
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -130,9 +239,16 @@ export function AdminClients() {
     }).format(price);
   };
 
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
   // # VERIFICAR SE CLIENTE PRECISA DE LEMBRETE
   const needsReminder = (client: Client) => {
-    if (!client.last_visit_at || !settings?.reminder_enabled) return false;
+    if (!client.last_visit_at) return false;
     const days = differenceInDays(new Date(), new Date(client.last_visit_at));
     return days >= (settings?.reminder_days || 15);
   };
@@ -185,13 +301,31 @@ export function AdminClients() {
   return (
     <div className="space-y-6 min-w-0 overflow-hidden">
       {/* # TÍTULO */}
-      <div className="min-w-0">
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-gradient-gold break-words">
-          Clientes
-        </h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          Histórico completo e informações dos clientes
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-gradient-gold break-words">
+            Clientes
+          </h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Histórico completo e informações dos clientes
+          </p>
+        </div>
+        
+        {/* Botão enviar lembretes em massa */}
+        {clientsNeedingReminder.length > 0 && (
+          <Button
+            onClick={sendBulkReminders}
+            disabled={sendingReminders}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {sendingReminders ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4 mr-2" />
+            )}
+            Enviar para {clientsNeedingReminder.length} cliente(s)
+          </Button>
+        )}
       </div>
 
       {/* # ALERTA DE LEMBRETES */}
@@ -204,7 +338,8 @@ export function AdminClients() {
             </p>
           </div>
           <p className="text-sm text-muted-foreground">
-            Estes clientes não visitam há mais de {settings?.reminder_days || 15} dias.
+            Estes clientes não visitam há mais de {settings?.reminder_days || 15} dias. 
+            Clique no botão acima para enviar lembretes via WhatsApp.
           </p>
         </div>
       )}
@@ -321,11 +456,28 @@ export function AdminClients() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => handleEdit(client)}
+                            title="Editar"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => sendWhatsAppReminder(client)}
                             title="Enviar WhatsApp"
                             className={showReminder ? "text-primary" : ""}
                           >
                             <MessageSquare className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(client.id)}
+                            title="Excluir"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </td>
@@ -337,6 +489,72 @@ export function AdminClients() {
           </div>
         </div>
       )}
+
+      {/* # MODAL DE EDIÇÃO */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">
+              Editar Cliente
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Nome
+              </label>
+              <Input
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="bg-secondary border-border"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Telefone
+              </label>
+              <Input
+                value={formatPhone(editForm.phone)}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value.replace(/\D/g, "") })}
+                className="bg-secondary border-border"
+                maxLength={15}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                E-mail (opcional)
+              </label>
+              <Input
+                type="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                className="bg-secondary border-border"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setEditDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button className="flex-1" onClick={handleSaveEdit} disabled={saving}>
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Save className="h-4 w-4 mr-2" />
+                )}
+                Salvar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* # MODAL DE HISTÓRICO */}
       <Dialog open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
