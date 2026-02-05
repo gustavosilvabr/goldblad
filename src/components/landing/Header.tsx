@@ -63,24 +63,25 @@ export function Header({
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* # LOGO */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group py-2">
             {logoUrl ? (
               <motion.img 
                 src={logoUrl} 
-                alt={businessName} 
+                alt={businessName}
+                className="mr-2"
                 style={{
                   height: logoSize === "custom" && logoSizeCustom 
                     ? `${Math.min(Math.max(logoSizeCustom, 24), 120)}px`
-                    : logoSize === "small" ? "32px" 
-                    : logoSize === "large" ? "64px" 
-                    : "48px",
+                    : logoSize === "small" ? "40px" 
+                    : logoSize === "large" ? "72px" 
+                    : "56px",
                   width: "auto"
                 }}
                 whileHover={{ scale: 1.05 }}
               />
             ) : (
-              <div className="flex items-center gap-2">
-                <Scissors className="h-8 w-8 text-primary" />
+              <div className="flex items-center gap-3">
+                <Scissors className="h-9 w-9 text-primary" />
                 <span className="font-display text-xl md:text-2xl text-gradient-gold uppercase tracking-wider">
                   {businessName}
                 </span>
