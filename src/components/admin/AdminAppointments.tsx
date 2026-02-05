@@ -58,7 +58,7 @@ export function AdminAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterDate, setFilterDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [filterDate, setFilterDate] = useState<string>("");  // Sem filtro de data por padrão
   const [filterStatus, setFilterStatus] = useState<string>("all");
   
   // # MODAL DE EDIÇÃO
@@ -358,12 +358,24 @@ export function AdminAppointments() {
             className="bg-secondary border-border pl-10"
           />
         </div>
-        <Input
-          type="date"
-          value={filterDate}
-          onChange={(e) => setFilterDate(e.target.value)}
-          className="bg-secondary border-border w-auto"
-        />
+        <div className="flex gap-2">
+          <Input
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            className="bg-secondary border-border w-auto"
+          />
+          {filterDate && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setFilterDate("")}
+              title="Limpar filtro de data"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-36">
             <SelectValue placeholder="Status" />
