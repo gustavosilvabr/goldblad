@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
+import { QuickBooking } from "@/components/landing/QuickBooking";
 import { Services } from "@/components/landing/Services";
 import { Team } from "@/components/landing/Team";
 import { Gallery } from "@/components/landing/Gallery";
@@ -93,6 +94,9 @@ const Index = () => {
           businessName={businessName}
           tagline="Estilo e precisão em cada corte"
         />
+        
+        {/* Seção de agendamento rápido - visível logo após o hero */}
+        <QuickBooking />
         
         <Services services={services.length > 0 ? services : undefined} />
         
