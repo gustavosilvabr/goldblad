@@ -213,39 +213,50 @@ export function BookingForm({
       // # NOTA: Não verificamos clientes existentes aqui pois RLS bloqueia SELECT para anônimos
       // O cliente será vinculado/criado quando o admin marcar o agendamento como CONCLUÍDO
 
-      // # CRIAR AGENDAMENTO
+      // # CRIAR AGENDAMENTO (via função segura no backend)
       const barberId = selectedBarber === "any" ? null : selectedBarber;
-      
-      const { data: appointment, error: appointmentError } = await supabase
-        .from("appointments")
-        .insert({
-          client_id: null, // Será vinculado quando o admin confirmar
-          client_name: name,
-          client_phone: phoneClean,
-          barber_id: barberId,
-          appointment_date: dateStr,
-          appointment_time: selectedTime,
-          total_price: total,
-          status: "pending",
+
+      // Revalidar disponibilidade com dados mais atuais (evita corrida)
+      await fetchBookedSlots();
+      if (!isSlotAvailable(selectedDate, selectedTime)) {
+        toast({
+          title: "Horário indisponível",
+          description: "Esse horário acabou de ser reservado. Escolha outro.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const serviceItems = selectedServices
+        .map((serviceId) => {
+          const service = services.find((s) => s.id === serviceId);
+          if (!service) return null;
+          return {
+            service_id: serviceId,
+            service_name: service.name,
+            price: service.price,
+          };
         })
-        .select("id")
-        .single();
+        .filter(Boolean);
+
+      const { data: appointmentId, error: appointmentError } = await supabase.rpc(
+        "create_public_appointment",
+        {
+          p_client_name: name,
+          p_client_phone: phoneClean,
+          p_barber_id: barberId,
+          p_appointment_date: dateStr,
+          p_appointment_time: selectedTime,
+          p_total_price: total,
+          p_service_items: serviceItems,
+        },
+      );
 
       if (appointmentError) throw appointmentError;
 
-      // # SALVAR SERVIÇOS DO AGENDAMENTO
-      if (appointment) {
-        const serviceRecords = selectedServices.map((serviceId) => {
-          const service = services.find((s) => s.id === serviceId);
-          return {
-            appointment_id: appointment.id,
-            service_id: serviceId,
-            service_name: service?.name || "",
-            price: service?.price || 0,
-          };
-        });
-
-        await supabase.from("appointment_services").insert(serviceRecords);
+      // appointmentId é retornado pela função (uuid)
+      if (!appointmentId) {
+        throw new Error("Appointment was not created");
       }
 
       // # 4. REDIRECIONAR PARA WHATSAPP
