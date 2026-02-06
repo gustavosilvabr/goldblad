@@ -233,11 +233,11 @@ export function AdminAppointments() {
   // # ENVIAR WHATSAPP
   const sendWhatsApp = (appointment: Appointment) => {
     const message = encodeURIComponent(
-      `Olá ${appointment.client_name.split(" ")[0]}! Seu agendamento está confirmado:\n\n` +
+      `Olá ${appointment.client_name.split(" ")[0]}! Seu agendamento está confirmado ✅\n\n` +
       `📅 Data: ${format(new Date(appointment.appointment_date + "T12:00:00"), "dd/MM/yyyy", { locale: ptBR })}\n` +
-      `⏰ Horário: ${appointment.appointment_time?.slice(0, 5)}\n` +
-      `💰 Valor: R$ ${Number(appointment.total_price).toFixed(2)}\n\n` +
-      `Te aguardamos! ✂️💈`
+      `🕐 Horário: ${appointment.appointment_time?.slice(0, 5)}\n` +
+      `💵 Valor: R$ ${Number(appointment.total_price).toFixed(2)}\n\n` +
+      `Te aguardamos! 💇‍♂️👋`
     );
     window.open(`https://wa.me/55${appointment.client_phone.replace(/\D/g, "")}?text=${message}`, "_blank");
   };
