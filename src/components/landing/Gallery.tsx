@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X, ChevronLeft, ChevronRight, Play, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// # SEÇÃO DA GALERIA PREMIUM
+// # SEÇÃO DA GALERIA OTIMIZADA - Animações reduzidas para mobile
 interface GalleryItem {
   id: string;
   image_url: string;
@@ -50,22 +50,12 @@ export function Gallery({ items = defaultItems }: GalleryProps) {
 
   return (
     <section id="galeria" className="py-20 md:py-32 relative overflow-hidden">
-      {/* # BACKGROUND */}
+      {/* # BACKGROUND ESTÁTICO */}
       <div className="absolute inset-0 bg-card" />
-      <motion.div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_hsla(43,74%,49%,0.1)_0%,_transparent_50%)]"
-        animate={{
-          opacity: [0.5, 0.8, 0.5],
-        }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_hsla(43,74%,49%,0.1)_0%,_transparent_50%)]" />
 
-      {/* # DECORAÇÃO */}
-      <motion.div
-        className="absolute bottom-20 left-10 w-32 h-32 rounded-full border border-primary/10"
-        animate={{ scale: [1, 1.1, 1] }}
-        transition={{ duration: 5, repeat: Infinity }}
-      />
+      {/* # DECORAÇÃO ESTÁTICA */}
+      <div className="absolute bottom-20 left-10 w-32 h-32 rounded-full border border-primary/10" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* # TÍTULO */}
@@ -76,15 +66,10 @@ export function Gallery({ items = defaultItems }: GalleryProps) {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <motion.span
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4"
-          >
+          <span className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             <Camera className="h-4 w-4" />
             Galeria
-          </motion.span>
+          </span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gradient-gold mb-4">
             Nossos Trabalhos
           </h2>
@@ -102,65 +87,37 @@ export function Gallery({ items = defaultItems }: GalleryProps) {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.08 }}
-              whileHover={{ scale: 1.02, transition: { duration: 0.3 } }}
-              className="group relative aspect-square rounded-xl md:rounded-2xl overflow-hidden cursor-pointer"
+              className="group relative aspect-square rounded-xl md:rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300"
               onClick={() => openLightbox(index)}
             >
               <img
                 src={item.image_url}
                 alt={item.title || `Galeria ${index + 1}`}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                loading="lazy"
               />
               
               {/* # OVERLAY */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
               {/* # ÍCONE DE VÍDEO */}
               {item.is_video && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center"
-                    whileHover={{ scale: 1.1 }}
-                    animate={{
-                      boxShadow: [
-                        "0 0 20px hsla(43,74%,49%,0.4)",
-                        "0 0 40px hsla(43,74%,49%,0.6)",
-                        "0 0 20px hsla(43,74%,49%,0.4)",
-                      ],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
+                  <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-gold">
                     <Play className="h-8 w-8 text-primary-foreground ml-1" />
-                  </motion.div>
+                  </div>
                 </div>
               )}
               
               {/* # TÍTULO */}
               {item.title && (
-                <motion.div
-                  className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
-                >
+                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                   <p className="text-white font-medium text-sm md:text-base">{item.title}</p>
-                </motion.div>
+                </div>
               )}
 
               {/* # BORDA DOURADA */}
-              <motion.div
-                className="absolute inset-0 border-2 border-primary rounded-xl md:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              />
-
-              {/* # CORNER ACCENT */}
-              <motion.div
-                className="absolute top-3 right-3 w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                initial={{ scale: 0 }}
-                whileHover={{ scale: 1 }}
-              >
-                <div className="w-full h-full rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                </div>
-              </motion.div>
+              <div className="absolute inset-0 border-2 border-primary rounded-xl md:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </motion.div>
           ))}
         </div>
@@ -177,34 +134,27 @@ export function Gallery({ items = defaultItems }: GalleryProps) {
             onClick={closeLightbox}
           >
             {/* # FECHAR */}
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
+            <button
               onClick={closeLightbox}
               className="absolute top-4 right-4 p-3 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-all z-20"
             >
               <X className="h-6 w-6" />
-            </motion.button>
+            </button>
 
             {/* # NAVEGAÇÃO */}
-            <motion.button
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+            <button
               onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
               className="absolute left-4 p-3 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-all z-20"
             >
               <ChevronLeft className="h-8 w-8" />
-            </motion.button>
+            </button>
 
-            <motion.button
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+            <button
               onClick={(e) => { e.stopPropagation(); goToNext(); }}
               className="absolute right-4 p-3 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-all z-20"
             >
               <ChevronRight className="h-8 w-8" />
-            </motion.button>
+            </button>
 
             {/* # IMAGEM */}
             <motion.img
@@ -221,25 +171,20 @@ export function Gallery({ items = defaultItems }: GalleryProps) {
 
             {/* # TÍTULO */}
             {items[selectedIndex].title && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white text-lg font-medium bg-black/50 px-6 py-2 rounded-full backdrop-blur-sm"
-              >
+              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white text-lg font-medium bg-black/50 px-6 py-2 rounded-full backdrop-blur-sm">
                 {items[selectedIndex].title}
-              </motion.div>
+              </div>
             )}
 
             {/* # INDICADORES */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
               {items.map((_, index) => (
-                <motion.button
+                <button
                   key={index}
                   onClick={(e) => { e.stopPropagation(); setSelectedIndex(index); }}
                   className={`w-2 h-2 rounded-full transition-all ${
                     index === selectedIndex ? "bg-primary w-6" : "bg-white/30 hover:bg-white/50"
                   }`}
-                  whileHover={{ scale: 1.2 }}
                 />
               ))}
             </div>

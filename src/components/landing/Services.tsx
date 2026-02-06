@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Scissors, Sparkles, Star, Clock, Zap } from "lucide-react";
 
-// # SEÇÃO DE SERVIÇOS PREMIUM
+// # SEÇÃO DE SERVIÇOS OTIMIZADA - Animações reduzidas para mobile
 interface Service {
   id: string;
   name: string;
@@ -49,23 +49,12 @@ export function Services({ services = defaultServices }: ServicesProps) {
 
   return (
     <section id="servicos" className="py-20 md:py-32 relative overflow-hidden">
-      {/* # BACKGROUND */}
+      {/* # BACKGROUND ESTÁTICO */}
       <div className="absolute inset-0 bg-card" />
-      <motion.div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsla(43,74%,49%,0.08)_0%,_transparent_70%)]"
-        animate={{
-          opacity: [0.5, 0.8, 0.5],
-          scale: [1, 1.05, 1],
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-      />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsla(43,74%,49%,0.08)_0%,_transparent_70%)]" />
 
-      {/* # DECORAÇÃO */}
-      <motion.div
-        className="absolute top-10 right-10 w-64 h-64 rounded-full border border-primary/10"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-      />
+      {/* # DECORAÇÃO ESTÁTICA */}
+      <div className="absolute top-10 right-10 w-64 h-64 rounded-full border border-primary/10" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* # TÍTULO */}
@@ -76,14 +65,9 @@ export function Services({ services = defaultServices }: ServicesProps) {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <motion.span
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4"
-          >
+          <span className="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             Nossos Serviços
-          </motion.span>
+          </span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gradient-gold mb-4">
             O Que Oferecemos
           </h2>
@@ -103,32 +87,16 @@ export function Services({ services = defaultServices }: ServicesProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -8, transition: { duration: 0.3 } }}
                 className="group"
               >
-                <div className="relative bg-secondary/50 rounded-2xl p-8 border border-border hover:border-primary/50 transition-all duration-500 h-full">
+                <div className="relative bg-secondary/50 rounded-2xl p-8 border border-border hover:border-primary/50 transition-all duration-300 h-full hover:-translate-y-2">
                   {/* # GLOW NO HOVER */}
-                  <motion.div
-                    className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   {/* # ÍCONE */}
-                  <motion.div
-                    className="relative w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors"
-                    whileHover={{ rotate: [0, -10, 10, 0], transition: { duration: 0.5 } }}
-                  >
+                  <div className="relative w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                     <Icon className="h-8 w-8 text-primary" />
-                    
-                    {/* # PULSO */}
-                    <motion.div
-                      className="absolute inset-0 rounded-2xl border-2 border-primary/30"
-                      animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.5, 0, 0.5],
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    />
-                  </motion.div>
+                  </div>
 
                   {/* # NOME */}
                   <h3 className="relative text-2xl font-display font-semibold text-foreground mb-2">
@@ -149,14 +117,11 @@ export function Services({ services = defaultServices }: ServicesProps) {
                   </div>
 
                   {/* # PREÇO */}
-                  <motion.div
-                    className="relative flex items-end gap-1"
-                    whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-                  >
+                  <div className="relative flex items-end gap-1">
                     <span className="text-4xl font-bold text-primary">
                       {formatPrice(service.price)}
                     </span>
-                  </motion.div>
+                  </div>
 
                   {/* # DECORAÇÃO CANTO */}
                   <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -177,19 +142,9 @@ export function Services({ services = defaultServices }: ServicesProps) {
             transition={{ duration: 0.6 }}
           >
             <h3 className="text-2xl font-display font-semibold text-center text-foreground mb-8 flex items-center justify-center gap-3">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-              >
-                <Sparkles className="h-6 w-6 text-primary" />
-              </motion.div>
+              <Sparkles className="h-6 w-6 text-primary" />
               Serviços Adicionais
-              <motion.div
-                animate={{ rotate: -360 }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-              >
-                <Sparkles className="h-6 w-6 text-primary" />
-              </motion.div>
+              <Sparkles className="h-6 w-6 text-primary" />
             </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -200,17 +155,13 @@ export function Services({ services = defaultServices }: ServicesProps) {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  whileHover={{ x: 4, transition: { duration: 0.2 } }}
                   className="group"
                 >
-                  <div className="flex items-center justify-between bg-secondary/30 rounded-xl p-5 border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-gold">
+                  <div className="flex items-center justify-between bg-secondary/30 rounded-xl p-5 border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-gold hover:translate-x-1">
                     <div className="flex items-center gap-4">
-                      <motion.div
-                        className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
-                        whileHover={{ scale: 1.1 }}
-                      >
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                         <Star className="h-5 w-5 text-primary/60" />
-                      </motion.div>
+                      </div>
                       <div>
                         <span className="font-semibold text-foreground">{service.name}</span>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -219,12 +170,9 @@ export function Services({ services = defaultServices }: ServicesProps) {
                         </div>
                       </div>
                     </div>
-                    <motion.span
-                      className="font-bold text-lg text-primary"
-                      whileHover={{ scale: 1.1 }}
-                    >
+                    <span className="font-bold text-lg text-primary">
                       {formatPrice(service.price)}
-                    </motion.span>
+                    </span>
                   </div>
                 </motion.div>
               ))}

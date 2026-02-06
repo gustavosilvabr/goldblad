@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,9 @@ import {
   Trash2, 
   Save, 
   X,
-  User
+  User,
+  Upload,
+  ImageIcon
 } from "lucide-react";
 import {
   Dialog,
@@ -20,7 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-// # GESTÃO DE BARBEIROS
+// # GESTÃO DE BARBEIROS COM UPLOAD DE FOTO
 interface Barber {
   id: string;
   name: string;
@@ -38,6 +40,10 @@ export function AdminBarbers() {
   const [editingBarber, setEditingBarber] = useState<Barber | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -77,6 +83,7 @@ export function AdminBarbers() {
         bio: barber.bio || "",
         photo_url: barber.photo_url || "",
       });
+      setPreviewUrl(barber.photo_url || "");
     } else {
       setEditingBarber(null);
       setForm({
@@ -86,8 +93,83 @@ export function AdminBarbers() {
         bio: "",
         photo_url: "",
       });
+      setPreviewUrl("");
     }
+    setSelectedFile(null);
     setIsDialogOpen(true);
+  };
+
+  // # UPLOAD DE FOTO DO DISPOSITIVO
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione uma imagem válida",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar tamanho (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Erro",
+        description: "A imagem deve ter no máximo 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  // # FAZER UPLOAD PARA O STORAGE
+  const uploadPhoto = async (): Promise<string | null> => {
+    if (!selectedFile) return form.photo_url || null;
+
+    setUploading(true);
+    try {
+      const fileExt = selectedFile.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `barbers/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("barber-photos")
+        .upload(filePath, selectedFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("barber-photos")
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      toast({
+        title: "Erro ao fazer upload",
+        description: "Não foi possível enviar a foto. Tente novamente.",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // # REMOVER FOTO
+  const handleRemovePhoto = () => {
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setForm({ ...form, photo_url: "" });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleSave = async () => {
@@ -102,6 +184,9 @@ export function AdminBarbers() {
 
     setSaving(true);
     try {
+      // # FAZER UPLOAD DA FOTO SE HOUVER
+      const photoUrl = await uploadPhoto();
+
       if (editingBarber) {
         const { error } = await supabase
           .from("barbers")
@@ -110,7 +195,7 @@ export function AdminBarbers() {
             phone: form.phone || null,
             instagram: form.instagram || null,
             bio: form.bio || null,
-            photo_url: form.photo_url || null,
+            photo_url: photoUrl,
           })
           .eq("id", editingBarber.id);
 
@@ -126,7 +211,7 @@ export function AdminBarbers() {
           phone: form.phone || null,
           instagram: form.instagram || null,
           bio: form.bio || null,
-          photo_url: form.photo_url || null,
+          photo_url: photoUrl,
           display_order: barbers.length,
         });
 
@@ -139,6 +224,8 @@ export function AdminBarbers() {
       }
 
       setIsDialogOpen(false);
+      setSelectedFile(null);
+      setPreviewUrl("");
       fetchBarbers();
     } catch (error) {
       console.error("Error saving barber:", error);
@@ -263,16 +350,61 @@ export function AdminBarbers() {
                 />
               </div>
 
+              {/* # UPLOAD DE FOTO */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  URL da Foto
+                  Foto do Barbeiro
                 </label>
-                <Input
-                  value={form.photo_url}
-                  onChange={(e) => setForm({ ...form, photo_url: e.target.value })}
-                  placeholder="https://..."
-                  className="bg-secondary border-border"
+                
+                {/* # PREVIEW DA FOTO */}
+                {previewUrl ? (
+                  <div className="relative w-32 h-32 mx-auto mb-4 rounded-xl overflow-hidden bg-secondary">
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="absolute top-2 right-2 p-1 rounded-full bg-destructive text-white hover:bg-destructive/80 transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-32 h-32 mx-auto mb-4 rounded-xl bg-secondary border-2 border-dashed border-border flex items-center justify-center">
+                    <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                )}
+
+                {/* # INPUT DE ARQUIVO OCULTO */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
                 />
+
+                {/* # BOTÃO DE UPLOAD */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-2" />
+                  )}
+                  {previewUrl ? "Trocar foto" : "Selecionar foto"}
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  JPG, PNG ou WebP. Máximo 5MB.
+                </p>
               </div>
 
               <div>
@@ -294,13 +426,13 @@ export function AdminBarbers() {
                 >
                   Cancelar
                 </Button>
-                <Button className="flex-1" onClick={handleSave} disabled={saving}>
-                  {saving ? (
+                <Button className="flex-1" onClick={handleSave} disabled={saving || uploading}>
+                  {saving || uploading ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
                     <Save className="h-4 w-4 mr-2" />
                   )}
-                  Salvar
+                  {uploading ? "Enviando..." : "Salvar"}
                 </Button>
               </div>
             </div>
