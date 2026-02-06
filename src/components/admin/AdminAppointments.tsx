@@ -27,10 +27,13 @@ import {
   Search,
   Edit,
   Trash2,
-  MessageSquare
+  MessageSquare,
+  Bell
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useNewAppointmentAlert } from "@/hooks/use-new-appointment-alert";
+import { motion, AnimatePresence } from "framer-motion";
 
 // # GESTÃO COMPLETA DE AGENDAMENTOS
 interface Appointment {
@@ -60,6 +63,9 @@ export function AdminAppointments() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState<string>("");  // Sem filtro de data por padrão
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  
+  // # ALERTA DE NOVO AGENDAMENTO
+  const { hasNewAppointment, newAppointmentData, clearAlert } = useNewAppointmentAlert();
   
   // # MODAL DE EDIÇÃO
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -314,6 +320,50 @@ export function AdminAppointments() {
 
   return (
     <div className="space-y-6 min-w-0 overflow-hidden">
+      {/* # ALERTA DE NOVO AGENDAMENTO - PISCANTE */}
+      <AnimatePresence>
+        {hasNewAppointment && newAppointmentData && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="relative"
+          >
+            <motion.div
+              animate={{ 
+                boxShadow: [
+                  "0 0 0 0 hsl(var(--primary) / 0.4)",
+                  "0 0 0 10px hsl(var(--primary) / 0)",
+                  "0 0 0 0 hsl(var(--primary) / 0)"
+                ]
+              }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="bg-primary/10 border-2 border-primary rounded-xl p-4 flex items-center gap-4"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+                className="w-12 h-12 rounded-full bg-primary flex items-center justify-center flex-shrink-0"
+              >
+                <Bell className="h-6 w-6 text-primary-foreground" />
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-foreground">Novo Agendamento!</p>
+                <p className="text-sm text-muted-foreground truncate">
+                  {newAppointmentData.client_name} - {newAppointmentData.appointment_time?.slice(0, 5)}
+                </p>
+              </div>
+              <button
+                onClick={clearAlert}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              >
+                OK
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* # TÍTULO */}
       <div className="min-w-0">
         <h1 className="text-2xl sm:text-3xl font-display font-bold text-gradient-gold break-words">
