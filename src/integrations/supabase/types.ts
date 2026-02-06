@@ -615,6 +615,18 @@ export type Database = {
         }
         Returns: string
       }
+      create_public_appointment: {
+        Args: {
+          p_appointment_date: string
+          p_appointment_time: string
+          p_barber_id: string
+          p_client_name: string
+          p_client_phone: string
+          p_service_items: Json
+          p_total_price: number
+        }
+        Returns: string
+      }
       get_booked_slots: {
         Args: never
         Returns: {
