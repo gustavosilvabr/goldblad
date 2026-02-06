@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X, ChevronLeft, ChevronRight, Play, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// # SEÇÃO DA GALERIA OTIMIZADA - Animações reduzidas para mobile
+// # SEÇÃO DA GALERIA COM EFEITOS OTIMIZADOS
 interface GalleryItem {
   id: string;
   image_url: string;
@@ -50,12 +50,12 @@ export function Gallery({ items = defaultItems }: GalleryProps) {
 
   return (
     <section id="galeria" className="py-20 md:py-32 relative overflow-hidden">
-      {/* # BACKGROUND ESTÁTICO */}
+      {/* # BACKGROUND COM EFEITO */}
       <div className="absolute inset-0 bg-card" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_hsla(43,74%,49%,0.1)_0%,_transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_hsla(43,74%,49%,0.1)_0%,_transparent_50%)] animate-pulse-glow" />
 
-      {/* # DECORAÇÃO ESTÁTICA */}
-      <div className="absolute bottom-20 left-10 w-32 h-32 rounded-full border border-primary/10" />
+      {/* # DECORAÇÃO COM ESCALA */}
+      <div className="absolute bottom-20 left-10 w-32 h-32 rounded-full border border-primary/10 animate-pulse-glow" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* # TÍTULO */}
@@ -100,10 +100,10 @@ export function Gallery({ items = defaultItems }: GalleryProps) {
               {/* # OVERLAY */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
-              {/* # ÍCONE DE VÍDEO */}
+              {/* # ÍCONE DE VÍDEO COM PULSO */}
               {item.is_video && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-gold">
+                  <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center animate-pulse-gold">
                     <Play className="h-8 w-8 text-primary-foreground ml-1" />
                   </div>
                 </div>
