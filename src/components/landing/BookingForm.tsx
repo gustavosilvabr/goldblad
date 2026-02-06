@@ -88,48 +88,49 @@ export function BookingForm({
 
   const timeSlots = generateTimeSlots(openingHour, closingHour);
 
-  // # BUSCAR HORÁRIOS OCUPADOS (usando função segura que não expõe dados pessoais)
-  useEffect(() => {
-    const fetchBlockedSlots = async () => {
-      try {
-        // Buscar datas bloqueadas
-        const { data: blocked } = await supabase
-          .from("blocked_dates")
-          .select("blocked_date, blocked_time, is_full_day, barber_id");
+  // # FUNÇÃO PARA BUSCAR HORÁRIOS OCUPADOS (reutilizável)
+  const fetchBookedSlots = async () => {
+    try {
+      // Buscar datas bloqueadas
+      const { data: blocked } = await supabase
+        .from("blocked_dates")
+        .select("blocked_date, blocked_time, is_full_day, barber_id");
 
-        // Buscar agendamentos existentes usando função RPC segura (não expõe dados pessoais)
-        const { data: bookedSlotsData, error } = await supabase
-          .rpc("get_booked_slots");
+      // Buscar agendamentos existentes usando função RPC segura (não expõe dados pessoais)
+      const { data: bookedSlotsData, error } = await supabase
+        .rpc("get_booked_slots");
 
-        if (error) {
-          console.error("Error fetching booked slots:", error);
-        }
-
-        if (blocked) {
-          setBlockedSlots(
-            blocked.map((b) => ({
-              date: b.blocked_date,
-              time: b.is_full_day ? undefined : b.blocked_time || undefined,
-              barber_id: b.barber_id || undefined,
-            }))
-          );
-        }
-
-        if (bookedSlotsData) {
-          setBookedSlots(
-            bookedSlotsData.map((a: { appointment_date: string; appointment_time: string; barber_id: string | null }) => ({
-              date: a.appointment_date,
-              time: a.appointment_time,
-              barber_id: a.barber_id || undefined,
-            }))
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching slots:", error);
+      if (error) {
+        console.error("Error fetching booked slots:", error);
       }
-    };
 
-    fetchBlockedSlots();
+      if (blocked) {
+        setBlockedSlots(
+          blocked.map((b) => ({
+            date: b.blocked_date,
+            time: b.is_full_day ? undefined : b.blocked_time || undefined,
+            barber_id: b.barber_id || undefined,
+          }))
+        );
+      }
+
+      if (bookedSlotsData) {
+        setBookedSlots(
+          bookedSlotsData.map((a: { appointment_date: string; appointment_time: string; barber_id: string | null }) => ({
+            date: a.appointment_date,
+            time: a.appointment_time,
+            barber_id: a.barber_id || undefined,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching slots:", error);
+    }
+  };
+
+  // # BUSCAR NA MONTAGEM DO COMPONENTE
+  useEffect(() => {
+    fetchBookedSlots();
   }, []);
 
   // # FORMATAR TELEFONE
@@ -275,6 +276,9 @@ export function BookingForm({
         title: "Agendamento realizado!",
         description: "Você será redirecionado para o WhatsApp.",
       });
+
+      // # ATUALIZAR LISTA DE HORÁRIOS OCUPADOS IMEDIATAMENTE
+      await fetchBookedSlots();
 
       // Pequeno delay para mostrar o toast
       setTimeout(() => {
