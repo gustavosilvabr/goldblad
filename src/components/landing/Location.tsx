@@ -12,7 +12,7 @@ interface LocationProps {
 }
 
 export function Location({
-  address = "Localizada na rua de baixo do Supermercado Goiás",
+  address = "Localizada na rua de baixo do Goiás Forte",
   phone = "(61) 99203-0064",
   instagram = "@gold_blad_barbearia",
   openingHours = "Seg-Dom: 09h às 20h",
@@ -133,19 +133,7 @@ export function Location({
             />
             
             {/* Overlay com gradiente premium */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent pointer-events-none" />
-            
-            {/* Marcador central com logo GOLDBLAD */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-              <div className="relative">
-                {/* Pin animado */}
-                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/40 animate-pulse">
-                  <MapPin className="h-8 w-8 text-primary-foreground" />
-                </div>
-                {/* Sombra do pin */}
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-2 bg-black/30 rounded-full blur-sm" />
-              </div>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none" />
             
             {/* Label GOLDBLAD */}
             <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
@@ -156,7 +144,7 @@ export function Location({
                   </div>
                   <div>
                     <h4 className="font-display font-bold text-gradient-gold text-lg">GOLDBLAD</h4>
-                    <p className="text-muted-foreground text-xs truncate">{address}</p>
+                    <p className="text-muted-foreground text-xs truncate">Rua de baixo do Goiás Forte</p>
                   </div>
                 </div>
               </div>
