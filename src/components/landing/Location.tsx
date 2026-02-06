@@ -117,19 +117,53 @@ export function Location({
             </Button>
           </div>
 
-          {/* # MAPA */}
-          <div className="rounded-2xl overflow-hidden border border-border h-[350px] md:h-full min-h-[350px] bg-secondary">
+          {/* # MAPA COM OVERLAY PREMIUM */}
+          <div className="relative rounded-2xl overflow-hidden border border-primary/20 h-[350px] md:h-full min-h-[350px] bg-secondary group shadow-xl shadow-primary/5">
+            {/* Mapa */}
             <iframe
               src={mapEmbedUrl}
               width="100%"
               height="100%"
-              style={{ border: 0 }}
+              style={{ border: 0, filter: "grayscale(80%) contrast(1.1) brightness(0.9)" }}
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               title="Localização da barbearia"
               className="w-full h-full"
             />
+            
+            {/* Overlay com gradiente premium */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent pointer-events-none" />
+            
+            {/* Marcador central com logo GOLDBLAD */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+              <div className="relative">
+                {/* Pin animado */}
+                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/40 animate-pulse">
+                  <MapPin className="h-8 w-8 text-primary-foreground" />
+                </div>
+                {/* Sombra do pin */}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-2 bg-black/30 rounded-full blur-sm" />
+              </div>
+            </div>
+            
+            {/* Label GOLDBLAD */}
+            <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
+              <div className="bg-background/95 backdrop-blur-sm rounded-xl p-4 border border-primary/30 shadow-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary-foreground font-bold text-lg">G</span>
+                  </div>
+                  <div>
+                    <h4 className="font-display font-bold text-gradient-gold text-lg">GOLDBLAD</h4>
+                    <p className="text-muted-foreground text-xs truncate">{address}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Borda brilhante no hover */}
+            <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-primary/40 transition-colors duration-300 pointer-events-none" />
           </div>
         </div>
       </div>
