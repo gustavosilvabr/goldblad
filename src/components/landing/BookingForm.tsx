@@ -209,27 +209,16 @@ export function BookingForm({
       const total = calculateTotal();
       const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-      // # 1. VERIFICAR SE CLIENTE EXISTE (apenas para referência)
-      let clientId: string | null = null;
-      
-      const { data: existingClient } = await supabase
-        .from("clients")
-        .select("id")
-        .eq("phone", phoneClean)
-        .maybeSingle();
+      // # NOTA: Não verificamos clientes existentes aqui pois RLS bloqueia SELECT para anônimos
+      // O cliente será vinculado/criado quando o admin marcar o agendamento como CONCLUÍDO
 
-      if (existingClient) {
-        clientId = existingClient.id;
-      }
-      // NOTA: O cliente só será criado/atualizado quando o agendamento for CONCLUÍDO
-
-      // # 2. CRIAR AGENDAMENTO
+      // # CRIAR AGENDAMENTO
       const barberId = selectedBarber === "any" ? null : selectedBarber;
       
       const { data: appointment, error: appointmentError } = await supabase
         .from("appointments")
         .insert({
-          client_id: clientId,
+          client_id: null, // Será vinculado quando o admin confirmar
           client_name: name,
           client_phone: phoneClean,
           barber_id: barberId,
@@ -243,7 +232,7 @@ export function BookingForm({
 
       if (appointmentError) throw appointmentError;
 
-      // # 3. SALVAR SERVIÇOS DO AGENDAMENTO
+      // # SALVAR SERVIÇOS DO AGENDAMENTO
       if (appointment) {
         const serviceRecords = selectedServices.map((serviceId) => {
           const service = services.find((s) => s.id === serviceId);
@@ -671,7 +660,7 @@ export function BookingForm({
                           day: "h-full w-full p-0 font-medium rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center text-sm sm:text-base",
                           day_range_end: "day-range-end",
                           day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground shadow-gold",
-                          day_today: "bg-accent text-accent-foreground font-bold ring-2 ring-primary/50",
+                          day_today: "bg-emerald-500/20 text-emerald-400 font-bold ring-2 ring-emerald-500/60",
                           day_outside: "day-outside text-muted-foreground opacity-30",
                           day_disabled: "text-muted-foreground opacity-30 cursor-not-allowed hover:bg-transparent",
                           day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
