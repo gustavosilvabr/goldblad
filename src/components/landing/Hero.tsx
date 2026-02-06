@@ -57,7 +57,7 @@ export function Hero({
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 md:pt-24">
       {/* # BACKGROUND COM GRADIENTES ANIMADOS VIA CSS */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-[hsl(43,30%,8%)]">
         {backgroundUrl && (
