@@ -88,7 +88,7 @@ export function BookingForm({
 
   const timeSlots = generateTimeSlots(openingHour, closingHour);
 
-  // # BUSCAR HORÁRIOS OCUPADOS
+  // # BUSCAR HORÁRIOS OCUPADOS (usando função segura que não expõe dados pessoais)
   useEffect(() => {
     const fetchBlockedSlots = async () => {
       try {
@@ -97,11 +97,13 @@ export function BookingForm({
           .from("blocked_dates")
           .select("blocked_date, blocked_time, is_full_day, barber_id");
 
-        // Buscar agendamentos existentes (pendentes ou confirmados)
-        const { data: appointments } = await supabase
-          .from("appointments")
-          .select("appointment_date, appointment_time, barber_id")
-          .in("status", ["pending", "confirmed"]);
+        // Buscar agendamentos existentes usando função RPC segura (não expõe dados pessoais)
+        const { data: bookedSlotsData, error } = await supabase
+          .rpc("get_booked_slots");
+
+        if (error) {
+          console.error("Error fetching booked slots:", error);
+        }
 
         if (blocked) {
           setBlockedSlots(
@@ -113,9 +115,9 @@ export function BookingForm({
           );
         }
 
-        if (appointments) {
+        if (bookedSlotsData) {
           setBookedSlots(
-            appointments.map((a) => ({
+            bookedSlotsData.map((a: { appointment_date: string; appointment_time: string; barber_id: string | null }) => ({
               date: a.appointment_date,
               time: a.appointment_time,
               barber_id: a.barber_id || undefined,
