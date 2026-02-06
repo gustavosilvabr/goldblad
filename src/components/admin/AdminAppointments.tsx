@@ -77,6 +77,22 @@ export function AdminAppointments() {
   useEffect(() => {
     fetchAppointments();
     fetchBarbers();
+    
+    // # REALTIME - Atualiza automaticamente quando agendamentos mudam
+    const channel = supabase
+      .channel('admin-appointments')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'appointments' },
+        () => {
+          fetchAppointments();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [filterDate, filterStatus]);
 
   const fetchAppointments = async () => {
