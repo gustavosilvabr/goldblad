@@ -606,6 +606,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_appointment_and_update_client: {
+        Args: {
+          p_appointment_id: string
+          p_client_name: string
+          p_client_phone: string
+          p_total_price: number
+        }
+        Returns: string
+      }
       get_booked_slots: {
         Args: never
         Returns: {
