@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Scissors, Sparkles, Star, Clock, Zap } from "lucide-react";
 
-// # SEÇÃO DE SERVIÇOS OTIMIZADA - Animações reduzidas para mobile
+// # SEÇÃO DE SERVIÇOS COM EFEITOS OTIMIZADOS
 interface Service {
   id: string;
   name: string;
@@ -49,12 +49,12 @@ export function Services({ services = defaultServices }: ServicesProps) {
 
   return (
     <section id="servicos" className="py-20 md:py-32 relative overflow-hidden">
-      {/* # BACKGROUND ESTÁTICO */}
+      {/* # BACKGROUND COM EFEITO PULSANTE */}
       <div className="absolute inset-0 bg-card" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsla(43,74%,49%,0.08)_0%,_transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsla(43,74%,49%,0.08)_0%,_transparent_70%)] animate-pulse-glow" />
 
-      {/* # DECORAÇÃO ESTÁTICA */}
-      <div className="absolute top-10 right-10 w-64 h-64 rounded-full border border-primary/10" />
+      {/* # DECORAÇÃO ROTATIVA */}
+      <div className="absolute top-10 right-10 w-64 h-64 rounded-full border border-primary/10 animate-rotate-slow" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* # TÍTULO */}
@@ -93,9 +93,11 @@ export function Services({ services = defaultServices }: ServicesProps) {
                   {/* # GLOW NO HOVER */}
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                  {/* # ÍCONE */}
+                  {/* # ÍCONE COM PULSO */}
                   <div className="relative w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                     <Icon className="h-8 w-8 text-primary" />
+                    {/* # Pulso no hover */}
+                    <div className="absolute inset-0 rounded-2xl border-2 border-primary/30 opacity-0 group-hover:opacity-100 animate-pulse-ring" />
                   </div>
 
                   {/* # NOME */}
@@ -118,7 +120,7 @@ export function Services({ services = defaultServices }: ServicesProps) {
 
                   {/* # PREÇO */}
                   <div className="relative flex items-end gap-1">
-                    <span className="text-4xl font-bold text-primary">
+                    <span className="text-4xl font-bold text-primary group-hover:animate-stat-pulse">
                       {formatPrice(service.price)}
                     </span>
                   </div>
@@ -142,9 +144,9 @@ export function Services({ services = defaultServices }: ServicesProps) {
             transition={{ duration: 0.6 }}
           >
             <h3 className="text-2xl font-display font-semibold text-center text-foreground mb-8 flex items-center justify-center gap-3">
-              <Sparkles className="h-6 w-6 text-primary" />
+              <Sparkles className="h-6 w-6 text-primary animate-rotate-slow" />
               Serviços Adicionais
-              <Sparkles className="h-6 w-6 text-primary" />
+              <Sparkles className="h-6 w-6 text-primary animate-rotate-slow-reverse" />
             </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

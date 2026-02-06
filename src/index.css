@@ -166,7 +166,7 @@
     box-shadow: 0 0 30px hsla(43, 74%, 49%, 0.3);
   }
 
-  /* # ANIMAÇÕES */
+  /* # ANIMAÇÕES OTIMIZADAS - GPU Accelerated */
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
@@ -182,12 +182,61 @@
     100% { background-position: 200% 0; }
   }
 
+  /* # NOVAS ANIMAÇÕES PARA HERO */
+  @keyframes rotate-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes rotate-slow-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+
+  @keyframes float-particle {
+    0% { transform: translateY(0) translateX(0); opacity: 0.4; }
+    50% { opacity: 0.8; }
+    100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+  }
+
+  @keyframes slide-right {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+  }
+
+  @keyframes slide-left {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-400%); }
+  }
+
+  @keyframes pulse-ring {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0; }
+  }
+
+  @keyframes text-glow {
+    0%, 100% { text-shadow: 0 0 20px hsla(43,74%,49%,0.3); }
+    50% { text-shadow: 0 0 40px hsla(43,74%,49%,0.5); }
+  }
+
+  @keyframes stat-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
   .animate-float {
     animation: float 3s ease-in-out infinite;
+    will-change: transform;
   }
 
   .animate-pulse-gold {
     animation: pulse-gold 2s ease-in-out infinite;
+    will-change: box-shadow;
   }
 
   .animate-shimmer {
@@ -199,7 +248,70 @@
     );
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
+    will-change: background-position;
   }
+
+  .animate-rotate-slow {
+    animation: rotate-slow 30s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-rotate-slow-reverse {
+    animation: rotate-slow-reverse 25s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 5s ease-in-out infinite;
+    will-change: opacity, transform;
+  }
+
+  .animate-slide-right {
+    animation: slide-right 8s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-slide-left {
+    animation: slide-left 10s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-pulse-ring {
+    animation: pulse-ring 2s ease-out infinite;
+    will-change: transform, opacity;
+  }
+
+  .animate-text-glow {
+    animation: text-glow 3s ease-in-out infinite;
+    will-change: text-shadow;
+  }
+
+  .animate-stat-pulse {
+    animation: stat-pulse 2s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  /* # PARTÍCULAS ANIMADAS */
+  .particle {
+    animation: float-particle 15s linear infinite;
+    will-change: transform, opacity;
+  }
+
+  .particle:nth-child(1) { animation-delay: 0s; animation-duration: 12s; }
+  .particle:nth-child(2) { animation-delay: 1s; animation-duration: 14s; }
+  .particle:nth-child(3) { animation-delay: 2s; animation-duration: 16s; }
+  .particle:nth-child(4) { animation-delay: 3s; animation-duration: 13s; }
+  .particle:nth-child(5) { animation-delay: 4s; animation-duration: 15s; }
+  .particle:nth-child(6) { animation-delay: 5s; animation-duration: 11s; }
+  .particle:nth-child(7) { animation-delay: 6s; animation-duration: 17s; }
+  .particle:nth-child(8) { animation-delay: 7s; animation-duration: 12s; }
+  .particle:nth-child(9) { animation-delay: 8s; animation-duration: 14s; }
+  .particle:nth-child(10) { animation-delay: 9s; animation-duration: 16s; }
+  .particle:nth-child(11) { animation-delay: 0.5s; animation-duration: 13s; }
+  .particle:nth-child(12) { animation-delay: 1.5s; animation-duration: 15s; }
+  .particle:nth-child(13) { animation-delay: 2.5s; animation-duration: 11s; }
+  .particle:nth-child(14) { animation-delay: 3.5s; animation-duration: 17s; }
+  .particle:nth-child(15) { animation-delay: 4.5s; animation-duration: 12s; }
 
   /* # GLASSMORPHISM */
   .glass {

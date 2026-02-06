@@ -1,7 +1,7 @@
 import { Instagram, User, Star, Scissors } from "lucide-react";
 import { motion } from "framer-motion";
 
-// # SEÇÃO DA EQUIPE OTIMIZADA - Animações reduzidas para mobile
+// # SEÇÃO DA EQUIPE COM EFEITOS OTIMIZADOS
 interface Barber {
   id: string;
   name: string;
@@ -23,13 +23,13 @@ const defaultBarbers: Barber[] = [
 export function Team({ barbers = defaultBarbers }: TeamProps) {
   return (
     <section id="equipe" className="py-20 md:py-32 relative overflow-hidden">
-      {/* # BACKGROUND ESTÁTICO */}
+      {/* # BACKGROUND COM EFEITO */}
       <div className="absolute inset-0 bg-background" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsla(43,74%,49%,0.1)_0%,_transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsla(43,74%,49%,0.1)_0%,_transparent_50%)] animate-pulse-glow" />
 
-      {/* # DECORAÇÃO ESTÁTICA */}
-      <div className="absolute top-20 left-10 w-40 h-40 rounded-full border border-primary/10" />
-      <div className="absolute bottom-10 right-20 w-24 h-24 rounded-full border border-primary/5" />
+      {/* # DECORAÇÃO ROTATIVA */}
+      <div className="absolute top-20 left-10 w-40 h-40 rounded-full border border-primary/10 animate-rotate-slow" />
+      <div className="absolute bottom-10 right-20 w-24 h-24 rounded-full border border-primary/5 animate-rotate-slow-reverse" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* # TÍTULO */}
@@ -75,7 +75,7 @@ export function Team({ barbers = defaultBarbers }: TeamProps) {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary via-muted to-secondary">
-                      <User className="h-24 w-24 text-muted-foreground/30" />
+                      <User className="h-24 w-24 text-muted-foreground/30 animate-pulse-glow" />
                     </div>
                   )}
                   
@@ -88,10 +88,14 @@ export function Team({ barbers = defaultBarbers }: TeamProps) {
 
                 {/* # INFO */}
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  {/* # RATING */}
+                  {/* # RATING COM ANIMAÇÃO */}
                   <div className="flex items-center gap-1 mb-2">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                      <Star 
+                        key={i} 
+                        className="h-4 w-4 fill-primary text-primary" 
+                        style={{ animationDelay: `${i * 0.1}s` }}
+                      />
                     ))}
                   </div>
 
@@ -108,17 +112,20 @@ export function Team({ barbers = defaultBarbers }: TeamProps) {
                       href={`https://instagram.com/${barber.instagram.replace("@", "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors text-sm"
+                      className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors text-sm group/link"
                     >
                       <Instagram className="h-4 w-4" />
                       {barber.instagram}
+                      <span className="opacity-0 group-hover/link:opacity-100 transition-opacity">
+                        →
+                      </span>
                     </a>
                   )}
                 </div>
 
-                {/* # DECORAÇÃO HOVER */}
+                {/* # DECORAÇÃO HOVER COM ROTAÇÃO */}
                 <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-primary/10 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Scissors className="h-5 w-5 text-primary" />
+                  <Scissors className="h-5 w-5 text-primary group-hover:animate-rotate-slow" />
                 </div>
 
                 {/* # BORDA BRILHANTE */}
